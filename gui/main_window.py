@@ -11,6 +11,7 @@ from PySide6.QtGui import QFont, QColor, QIcon, QPixmap, QPainter, QTextCursor
 from backend.ollama_client import OllamaClient
 from backend.hardware import get_hardware_info
 from gui.workers import BenchmarkWorker, PullWorker, HardwareMonitor
+from gui.contribution_dialog import ContributionDialog
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -588,6 +589,10 @@ class MainWindow(QMainWindow):
             
             self.json_view.setText(json.dumps(results, indent=2, ensure_ascii=False))
             self.tabs.setCurrentIndex(1) # Switch to results
+            
+            # Show Contribution Dialog
+            dlg = ContributionDialog(results, self)
+            dlg.exec()
             
         except Exception as e:
             self.log(f"Error saving results: {e}")

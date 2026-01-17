@@ -4,3 +4,4 @@ pynvml
 psutil
 py-cpuinfo
 PySide6-Addons
+PyGithub
