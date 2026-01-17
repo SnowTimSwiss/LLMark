@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         
         self.settings_btn = QPushButton()
         self.settings_btn.setFixedSize(40, 40)
-        self.settings_btn.setToolTip("Einstellungen")
+        self.settings_btn.setToolTip("Settings")
         
         # Simple SVG Gear Icon
         gear_svg = """
@@ -115,12 +115,12 @@ class MainWindow(QMainWindow):
         # Tab 1: Control & Progress
         self.tab_control = QWidget()
         self.setup_control_tab()
-        self.tabs.addTab(self.tab_control, "Benchmark Start")
+        self.tabs.addTab(self.tab_control, "Benchmark Run")
 
         # Tab 2: Results
         self.tab_results = QWidget()
         self.setup_results_tab()
-        self.tabs.addTab(self.tab_results, "Resultate")
+        self.tabs.addTab(self.tab_results, "Results")
 
         # Tab 3: JSON
         self.tab_json = QWidget()
@@ -171,15 +171,10 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.start_btn)
         
         # Progress Area
-        self.progress_group = QGroupBox("Fortschritt")
-        p_layout = QVBoxLayout()
-        
-        self.overall_progress = QProgressBar()
-        self.overall_progress.setRange(0, 10) # 10 Benchmarks (A-J)
-        p_layout.addWidget(QLabel("Gesamt:"))
+        p_layout.addWidget(QLabel("Overall:"))
         p_layout.addWidget(self.overall_progress)
         
-        self.current_task_lbl = QLabel("Bereit")
+        self.current_task_lbl = QLabel("Ready")
         self.current_task_lbl.setStyleSheet("font-size: 14px; font-weight: bold;")
         p_layout.addWidget(self.current_task_lbl)
         
@@ -233,11 +228,11 @@ class MainWindow(QMainWindow):
         
         self.results_table = QTableWidget()
         self.results_table.setColumnCount(4)
-        self.results_table.setHorizontalHeaderLabels(["Benchmark", "Score / Wert", "Kommentar", "Status"])
+        self.results_table.setHorizontalHeaderLabels(["Benchmark", "Score / Value", "Comment", "Status"])
         self.results_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         layout.addWidget(self.results_table)
         
-        self.total_score_lbl = QLabel("Gesamt Score (Qualität): 0/90")
+        self.total_score_lbl = QLabel("Total Score (Quality): 0/90")
         self.total_score_lbl.setFont(QFont("Arial", 16, QFont.Bold))
         self.total_score_lbl.setAlignment(Qt.AlignRight)
         layout.addWidget(self.total_score_lbl)
@@ -284,17 +279,17 @@ class MainWindow(QMainWindow):
     def start_benchmark(self):
         test_model = self.model_combo.currentText()
         if not test_model or "No models" in test_model:
-            QMessageBox.warning(self, "Error", "Kein Modell ausgewählt")
+            QMessageBox.warning(self, "Error", "No model selected")
             return
             
         # Verify Judge
         if not self.client.check_model_availability("qwen2.5:14b-instruct"):
-            QMessageBox.critical(self, "Missing Judge", "Das Judge Modell 'qwen2.5:14b-instruct' wurde nicht gefunden.\nBitte 'ollama pull qwen2.5:14b-instruct' ausführen.")
+            QMessageBox.critical(self, "Missing Judge", "The judge model 'qwen2.5:14b-instruct' was not found.\nPlease run 'ollama pull qwen2.5:14b-instruct'.")
             return
 
         self.start_btn.setEnabled(False)
         self.results_table.setRowCount(0)
-        self.total_score_lbl.setText("Gesamt Score (Qualität): 0/90")
+        self.total_score_lbl.setText("Total Score (Quality): 0/90")
         self.log_area.clear()
         self.detail_log_view.clear()
         self.overall_progress.setValue(0)
@@ -324,14 +319,14 @@ class MainWindow(QMainWindow):
         name_map = {
             "A": "A: Geschwindigkeit",
             "B": "B: English Quality",
-            "C": "C: Deutsch Qualität",
-            "D": "D: Fakten",
-            "E": "E: Kontext",
-            "F": "F: Logik",
-            "G": "G: Kreativität",
-            "H": "H: ELI5/Erklärung",
-            "I": "I: Programmierung",
-            "J": "J: Rollenspiel"
+            "C": "C: German Quality",
+            "D": "D: Fact Checking",
+            "E": "E: Context",
+            "F": "F: Logic",
+            "G": "G: Creativity",
+            "H": "H: ELI5/Explanation",
+            "I": "I: Programming",
+            "J": "J: Roleplay"
         }
         
         name = name_map.get(bench_id, bench_id)
@@ -363,12 +358,12 @@ class MainWindow(QMainWindow):
     def on_all_finished(self, results):
         self.results_data = results
         self.start_btn.setEnabled(True)
-        self.current_task_lbl.setText("Fertig!")
-        self.log("Alle Benchmarks abgeschlossen.")
+        self.current_task_lbl.setText("Finished!")
+        self.log("All benchmarks completed.")
         
         # Total score should only be B-J (Quality)
         quality_score = sum(b['score'] for b in results['benchmarks'] if b['name'] in list("BCDEFGHIJ"))
-        self.total_score_lbl.setText(f"Gesamt Score (Qualität): {quality_score}/90")
+        self.total_score_lbl.setText(f"Total Score (Quality): {quality_score}/90")
         
         # Save JSON
         if not os.path.exists("results"):
@@ -383,14 +378,14 @@ class MainWindow(QMainWindow):
                 json.dump(results, f, indent=2, ensure_ascii=False)
             self.last_json_path = os.path.abspath(filename)
             self.open_json_btn.setEnabled(True)
-            self.log(f"Gespeichert unter: {filename}")
+            self.log(f"Saved to: {filename}")
             
             # Show JSOn
             self.json_view.setText(json.dumps(results, indent=2, ensure_ascii=False))
             self.tabs.setCurrentIndex(1) # Switch to results
             
         except Exception as e:
-            self.log(f"Fehler beim Speichern: {e}")
+            self.log(f"Error while saving: {e}")
 
     def open_json_file(self):
         if hasattr(self, 'last_json_path'):
@@ -405,7 +400,7 @@ class MainWindow(QMainWindow):
         config = get_config()
         
         dialog = QDialog(self)
-        dialog.setWindowTitle("Einstellungen")
+        dialog.setWindowTitle("Settings")
         dialog.setMinimumWidth(400)
         dialog_layout = QVBoxLayout(dialog)
         
@@ -426,5 +421,5 @@ class MainWindow(QMainWindow):
                 config["ollama_api_url"] = new_url
                 save_config(config)
                 self.client.base_url = new_url
-                QMessageBox.information(self, "Erfolg", "Ollama API URL wurde aktualisiert.")
+                QMessageBox.information(self, "Success", "Ollama API URL has been updated.")
                 self.load_models()

@@ -263,20 +263,20 @@ Evaluation Criteria:
 
             "D": {
                 "prompt": (
-                    "Bewerten Sie jede Aussage als KORREKT oder FALSCH und begründen Sie kurz:\n\n"
+                    "Evaluate each statement as CORRECT or FALSE and justify briefly:\n\n"
                     "Facts (10 minimum):\n"
-                    "1. Die Berliner Mauer wurde 1961 gebaut.\n"
-                    "2. Die Berliner Mauer fiel 1989.\n"
-                    "3. Wasser kocht bei höherem Luftdruck bei niedrigerer Temperatur.\n"
-                    "4. Napoleon verlor die Schlacht von Waterloo.\n"
-                    "5. Die Schweiz ist Mitglied der EU.\n"
-                    "6. Isaac Newton entwickelte das Gravitationsgesetz.\n"
-                    "7. Die Erde ist kein perfekter Kreis.\n"
-                    "8. Albert Einstein gewann 1921 den Nobelpreis für Physik.\n"
-                    "9. Mount Everest ist der höchste Berg der Erde.\n"
-                    "10. Die UNO wurde 1945 gegründet."
+                    "1. The Berlin Wall was built in 1961.\n"
+                    "2. The Berlin Wall fell in 1989.\n"
+                    "3. Water boils at a lower temperature at higher atmospheric pressure.\n"
+                    "4. Napoleon lost the Battle of Waterloo.\n"
+                    "5. Switzerland is a member of the EU.\n"
+                    "6. Isaac Newton developed the law of universal gravitation.\n"
+                    "7. The Earth is not a perfect circle.\n"
+                    "8. Albert Einstein won the Nobel Prize in Physics in 1921.\n"
+                    "9. Mount Everest is the highest mountain on Earth.\n"
+                    "10. The UN was founded in 1945."
                 ),
-                "task_desc": "Strict Multi-Fact Checking (10+ Fakten)",
+                "task_desc": "Strict Multi-Fact Checking (10+ Facts)",
                 "criteria": (
                     "Score based on:\n"
                     "- Correct true/false judgment for each fact (1 point each, 10 total)\n"
@@ -289,20 +289,20 @@ Evaluation Criteria:
 
             "E": {
                 "prompt": (
-                    "Meeting-Transkript:\n"
-                    "Alex: Projekt X bis Freitag fertig.\n"
-                    "Sarah: API fix, brauche Doku von Tom.\n"
-                    "Tom: Urlaub bis Montag.\n"
-                    "Alex: Bernd übernimmt Doku bis Mittwoch.\n"
+                    "Meeting Transcript:\n"
+                    "Alex: Project X finished by Friday.\n"
+                    "Sarah: API fix, need documentation from Tom.\n"
+                    "Tom: On vacation until Monday.\n"
+                    "Alex: Bernd takes over documentation until Wednesday.\n"
                     "Bernd: Server Error 500.\n"
-                    "Alex: Nächstes Meeting Donnerstag 14:00.\n\n"
-                    "Erstelle:\n"
-                    "1. Aufgabenliste mit Verantwortlichen und Deadlines\n"
-                    "2. Offene Probleme mit Auswirkungen\n"
-                    "3. Nächster Termin inkl. Uhrzeit\n"
-                    "Facts: Mindestens 10 konkrete Punkte sollen extrahiert werden."
+                    "Alex: Next meeting Thursday 14:00.\n\n"
+                    "Create:\n"
+                    "1. Task list with responsible persons and deadlines\n"
+                    "2. Open issues with impacts\n"
+                    "3. Next meeting time\n"
+                    "Facts: At least 10 specific points should be extracted."
                 ),
-                "task_desc": "Information Extraction (10+ Fakten)",
+                "task_desc": "Information Extraction (10+ Facts)",
                 "criteria": (
                     "Score based on:\n"
                     "- All 10+ facts extracted correctly (5 points)\n"
@@ -317,19 +317,19 @@ Evaluation Criteria:
 
             "F": {
                 "prompt": (
-                    "Erstelle einen vollständigen Stundenplan für zwei Klassen 1A, 2B.\n\n"
-                    "Lehrer:\n"
-                    "- Müller: Mathe, nur Mo/Di\n"
-                    "- Meier: Deutsch, Di–Do\n"
-                    "- Schmidt: Sport, Mo–Fr\n\n"
-                    "Räume:\n"
-                    "- R101: nur 08–10\n"
-                    "- R102: ganztägig\n\n"
-                    "Fächer: Mathe 2x pro Woche, Deutsch 2x, Sport 1x pro Klasse.\n"
-                    "Keine Doppelbelegung von Lehrern oder Räumen.\n"
-                    "Facts: Mindestens 10 verschiedene Constraints müssen korrekt erfüllt werden."
+                    "Create a complete timetable for two classes 1A, 2B.\n\n"
+                    "Teachers:\n"
+                    "- Müller: Math, Mon/Tue only\n"
+                    "- Meier: German, Tue–Thu\n"
+                    "- Schmidt: Sports, Mon–Fri\n\n"
+                    "Rooms:\n"
+                    "- R101: 08:00–10:00 only\n"
+                    "- R102: all day\n\n"
+                    "Subjects: Math 2x per week, German 2x, Sports 1x per class.\n"
+                    "No double bookings for teachers or rooms.\n"
+                    "Facts: At least 10 different constraints must be correctly fulfilled."
                 ),
-                "task_desc": "Constraint Satisfaction / Timetable (10+ Fakten)",
+                "task_desc": "Constraint Satisfaction / Timetable (10+ Facts)",
                 "criteria": (
                     "Score based on:\n"
                     "- All constraints satisfied (6 points)\n"
@@ -344,16 +344,16 @@ Evaluation Criteria:
 
             "G": {
                 "prompt": (
-                    "Schreibe den Anfang einer Geschichte (ca. 200-300 Wörter).\n"
+                    "Write the beginning of a story (approx. 200-300 words).\n"
                     "Genre: Cyberpunk-Noir.\n"
-                    "Setting: Eine verregnete Stadt im Jahr 2099.\n"
-                    "Pflichtbegriffe (alle müssen vorkommen):\n"
-                    "- Neon-Regenschirm\n"
-                    "- defekter Replikant\n"
-                    "- Kaffeeautomat\n\n"
-                    "Die Geschichte muss mit einem dramatischen Cliffhanger enden."
+                    "Setting: A rain-soaked city in the year 2099.\n"
+                    "Required terms (all must appear):\n"
+                    "- neon umbrella\n"
+                    "- defective replicant\n"
+                    "- coffee machine\n\n"
+                    "The story must end with a dramatic cliffhanger."
                 ),
-                "task_desc": "Kreatives Schreiben: Cyberpunk-Noir mit Constraints",
+                "task_desc": "Creative Writing: Cyberpunk-Noir with Constraints",
                 "criteria": (
                     "Score based on:\n"
                     "- All required terms included (3 points)\n"
@@ -370,15 +370,14 @@ Evaluation Criteria:
 
             "H": {
                 "prompt": (
-                    "Erkläre das wissenschaftliche Konzept der 'Quantenverschränkung' (Quantum Entanglement) "
-                    "einem 8-jährigen Kind.\n\n"
-                    "Anforderungen:\n"
-                    "- Keine komplexen Fachbegriffe ohne einfache Erklärung\n"
-                    "- Benutze eine Analogie mit Spielzeug oder Alltagsgegenständen\n"
-                    "- Max. 150 Wörter\n"
-                    "- Der Ton muss kindgerecht und begeisternd sein"
+                    "Explain the scientific concept of 'Quantum Entanglement' to an 8-year-old child.\n\n"
+                    "Requirements:\n"
+                    "- No complex technical terms without simple explanation\n"
+                    "- Use an analogy with toys or everyday objects\n"
+                    "- Max. 150 words\n"
+                    "- The tone must be child-friendly and engaging"
                 ),
-                "task_desc": "Technische Vereinfachung (ELI5): Quantenverschränkung",
+                "task_desc": "Technical Simplification (ELI5): Quantum Entanglement",
                 "criteria": (
                     "Score based on:\n"
                     "- Understandable for 8-year-old (4 points)\n"
@@ -395,15 +394,15 @@ Evaluation Criteria:
 
             "I": {
                 "prompt": (
-                    "Schreibe eine Python-Funktion namens 'is_valid_password(pw)', die ein Passwort prüft.\n"
-                    "Kriterien für 'True':\n"
-                    "1. Mindestens 10 Zeichen lang\n"
-                    "2. Enthält mindestens eine Zahl\n"
-                    "3. Enthält mindestens ein Sonderzeichen (z.B. !@#$%^&*)\n"
-                    "4. Enthält keine Leerzeichen\n\n"
-                    "Die Funktion muss einen Docstring enthalten und am Ende ein Beispiel für den Aufruf zeigen."
+                    "Write a Python function named 'is_valid_password(pw)' that checks a password.\n"
+                    "Criteria for 'True':\n"
+                    "1. At least 10 characters long\n"
+                    "2. Contains at least one number\n"
+                    "3. Contains at least one special character (e.g. !@#$%^&*)\n"
+                    "4. Contains no spaces\n\n"
+                    "The function must contain a docstring and show an example call at the end."
                 ),
-                "task_desc": "Python Programmierung: Passwort-Validierung",
+                "task_desc": "Python Programming: Password Validation",
                 "criteria": (
                     "Score based on:\n"
                     "- Correct logic (4 points)\n"
@@ -420,17 +419,17 @@ Evaluation Criteria:
 
             "J": {
                 "prompt": (
-                    "Situation: Du bist im Kundensupport einer Fluggesellschaft.\n"
-                    "Kunde: 'Mein Koffer wurde verloren! Ich bin in Paris und habe morgen früh eine Hochzeit, "
-                    "für die mein Anzug im Koffer war. Das ist eine absolute Katastrophe! Was tun Sie jetzt?!'\n\n"
-                    "Schreibe eine Antwort-Email (Max. 200 Wörter).\n"
-                    "Anforderungen:\n"
-                    "- Extrem empathisch und deeskalierend reagieren\n"
-                    "- Keine Standard-Floskeln ('Es tut uns leid für die Unannehmlichkeiten') sondern echte Empathie\n"
-                    "- Konkrete nächste Schritte nennen (Tracking, Entschädigung, Notkauf-Option)\n"
-                    "- Professionalität wahren"
+                    "Situation: You are in the customer support of an airline.\n"
+                    "Customer: 'My suitcase was lost! I'm in Paris and have a wedding tomorrow morning, "
+                    "for which my suit was in the suitcase. This is an absolute catastrophe! What are you doing now?!'\n\n"
+                    "Write a reply email (max. 200 words).\n"
+                    "Requirements:\n"
+                    "- Respond extremely empathically and de-escalating\n"
+                    "- No standard phrases ('We apologize for the inconvenience') but real empathy\n"
+                    "- Mention concrete next steps (tracking, compensation, emergency purchase option)\n"
+                    "- Maintain professionalism"
                 ),
-                "task_desc": "Rollenspiel / Deeskalation: Verlorener Koffer",
+                "task_desc": "Roleplay / De-escalation: Lost Suitcase",
                 "criteria": (
                     "Score based on:\n"
                     "- Empathetic response (4 points)\n"
