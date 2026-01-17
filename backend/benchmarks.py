@@ -66,13 +66,12 @@ class BenchmarkRunner:
 
     # -------------------- CONTENT BENCHMARKS --------------------
 
-    def generate_response(self, bench_id, test_model):
+    def generate_response(self, bench_id, test_model, stream=False):
         bench_def = self.get_benchmark_def(bench_id)
         try:
-            res = self.client.generate(test_model, bench_def["prompt"], stream=False)
-            return res.get("response") or "", None
+            return self.client.generate(test_model, bench_def["prompt"], stream=stream), None
         except Exception as e:
-            return "", str(e)
+            return None if stream else "", str(e)
 
     def judge_response(self, bench_id, model_text):
         bench_def = self.get_benchmark_def(bench_id)

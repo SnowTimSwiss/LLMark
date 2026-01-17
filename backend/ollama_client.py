@@ -40,6 +40,7 @@ class OllamaClient:
     def generate(self, model, prompt, system=None, options=None, stream=False):
         """
         Generates text. Returns dict with 'response', 'total_duration', 'eval_count', 'eval_duration' etc.
+        If stream=True, yields chunks of the response.
         """
         url = f"{self.base_url}/generate"
         payload = {
@@ -52,19 +53,25 @@ class OllamaClient:
         if options:
             payload["options"] = options
 
-        start_time = time.time()
         try:
+            if stream:
+                return self._generate_stream(url, payload)
+            
             response = requests.post(url, json=payload)
             response.raise_for_status()
-            if stream:
-                # Basic streaming support if needed, but for now we assume non-stream for benchmarks mainly
-                # or we accumulate logic.
-                pass 
-            
-            data = response.json()
-            return data
+            return response.json()
         except Exception as e:
             return {"error": str(e)}
+
+    def _generate_stream(self, url, payload):
+        try:
+            with requests.post(url, json=payload, stream=True) as r:
+                r.raise_for_status()
+                for line in r.iter_lines():
+                    if line:
+                        yield json.loads(line)
+        except Exception as e:
+            yield {"error": str(e)}
 
     def check_model_availability(self, model_name):
         models = self.list_models()

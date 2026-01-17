@@ -3,16 +3,6 @@ from PySide6.QtCore import QThread, Signal
 from backend.ollama_client import OllamaClient
 from backend.benchmarks import BenchmarkRunner, JUDGE_MODEL
 
-class BenchmarkWorker(QThread):
-    progress_update = Signal(str, str) # bench_id, message
-    benchmark_finished = Signal(str, dict) # bench_id, result
-    all_finished = Signal(dict) # full results
-    error_occurred = Signal(str)
-
-    def stop(self):
-        self.running = False
-
-
 class HardwareMonitor(QThread):
     vram_updated = Signal(float)
 
@@ -41,6 +31,7 @@ class HardwareMonitor(QThread):
 class BenchmarkWorker(QThread):
     progress_update = Signal(str, str) # bench_id, message
     verbose_log = Signal(str) # detailed log message
+    stream_chunk = Signal(str) # partial response chunk
     benchmark_finished = Signal(str, dict) # bench_id, result
     all_finished = Signal(dict) # full results
     error_occurred = Signal(str)
@@ -98,7 +89,7 @@ class BenchmarkWorker(QThread):
         pending_benchmarks = ["B", "C", "D", "E", "F", "G", "H", "I", "J"]
         generated_responses = {}
         
-        self.verbose_log.emit("\n--- STARTE PHASE 2: GENERIERUNG (B-F) ---")
+        self.verbose_log.emit("\n--- STARTE PHASE 2: GENERIERUNG (B-J) ---")
         
         for b_id in pending_benchmarks:
             if not self.running: break
@@ -106,29 +97,50 @@ class BenchmarkWorker(QThread):
             
             bench_def = self.runner.get_benchmark_def(b_id)
             self.verbose_log.emit(f"\n[Bench {b_id}] Prompt:\n{bench_def.get('prompt', '')}")
+            self.verbose_log.emit(f"[Bench {b_id}] Antwort:\n")
             
             # Record VRAM for each generation
             monitor = HardwareMonitor()
             monitor.start()
             
-            response, error = self.runner.generate_response(b_id, self.test_model)
+            stream_gen, error = self.runner.generate_response(b_id, self.test_model, stream=True)
             
-            monitor.stop()
-            
+            full_response = ""
             if error:
-                self.verbose_log.emit(f"[Bench {b_id}] Fehler: {error}")
+                self.verbose_log.emit(f"\n[Bench {b_id}] Fehler: {error}")
                 generated_responses[b_id] = {"error": error}
             else:
-                self.verbose_log.emit(f"[Bench {b_id}] Antwort:\n{response}")
-                generated_responses[b_id] = {
-                    "response": response,
-                    "metrics": {
-                        "peak_vram_mb": monitor.peak_vram,
-                        "avg_vram_mb": round(sum(monitor.samples)/len(monitor.samples), 2) if monitor.samples else 0,
-                        "gpu_detected": monitor.peak_vram > 500
+                try:
+                    for chunk in stream_gen:
+                        if not self.running: break
+                        if "error" in chunk:
+                            error = chunk["error"]
+                            break
+                        
+                        text = chunk.get("response", "")
+                        full_response += text
+                        self.stream_chunk.emit(text)
+                        
+                        if chunk.get("done"):
+                            break
+                except Exception as e:
+                    error = str(e)
+                
+                monitor.stop()
+                
+                if error:
+                    self.verbose_log.emit(f"\n[Bench {b_id}] Fehler beim Streamen: {error}")
+                    generated_responses[b_id] = {"error": error}
+                else:
+                    self.verbose_log.emit("\n[Bench " + b_id + "] Generierung abgeschlossen.")
+                    generated_responses[b_id] = {
+                        "response": full_response,
+                        "metrics": {
+                            "peak_vram_mb": monitor.peak_vram,
+                            "avg_vram_mb": round(sum(monitor.samples)/len(monitor.samples), 2) if monitor.samples else 0,
+                            "gpu_detected": monitor.peak_vram > 500
+                        }
                     }
-                }
-
         # 3. Phase: Judging (B-F)
         self.verbose_log.emit("\n--- STARTE PHASE 3: BEWERTUNG (JUDGE) ---")
         
