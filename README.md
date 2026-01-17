@@ -4,7 +4,7 @@ LLMark is a powerful, local benchmarking suite for Large Language Models (LLMs) 
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Ollama](https://img.shields.io/badge/Ollama-Local%20AI-orange.svg)](https://ollama.ai/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 ---
 
@@ -94,7 +94,7 @@ LLMark uses a **dual-model setup**:
 
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the GNU General Public License v3.0. See `LICENSE` for more information.
 
 ---
 
