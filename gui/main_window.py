@@ -40,125 +40,133 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Apply Global Dark Theme Style
+        # Apply VS Code Dark Theme
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #0d1117;
+                background-color: #1e1e1e;
             }
             QWidget {
-                color: #c9d1d9;
+                color: #cccccc;
                 font-family: 'Segoe UI', 'Roboto', 'Inter', sans-serif;
+                font-size: 14px;
+            }
+            QDialog {
+                background-color: #1e1e1e;
+            }
+            QLabel {
+                background-color: transparent;
+                color: #cccccc;
+            }
+            QLabel[heading="true"] {
+                color: #ffffff;
+                font-weight: 600;
             }
             QTabWidget::pane {
-                border: 1px solid #30363d;
-                background: #0d1117;
-                border-radius: 6px;
+                border: 1px solid #3e3e42;
+                background: #1e1e1e;
                 top: -1px;
             }
             QTabBar::tab {
-                background: #161b22;
-                color: #8b949e;
+                background: #2d2d2d;
+                color: #969696;
                 padding: 10px 20px;
-                border: 1px solid #30363d;
+                border: 1px solid #252526;
                 border-bottom: none;
-                border-top-left-radius: 6px;
-                border-top-right-radius: 6px;
-                margin-right: 4px;
-                font-weight: 500;
+                margin-right: 2px;
             }
             QTabBar::tab:selected {
-                background: #0d1117;
-                color: #f0f6fc;
-                border-top: 2px solid #f78166;
+                background: #1e1e1e;
+                color: #ffffff;
+                border-top: 2px solid #007acc;
             }
             QTabBar::tab:hover {
-                background: #21262d;
-                color: #f0f6fc;
+                background: #2a2d2e;
+                color: #ffffff;
             }
             QGroupBox {
-                border: 1px solid #30363d;
-                border-radius: 8px;
-                margin-top: 20px;
+                border: 1px solid #3e3e42;
+                border-radius: 6px;
+                margin-top: 24px;
                 padding-top: 15px;
-                background-color: #161b22;
+                background-color: #252526;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
                 left: 10px;
-                padding: 0 8px;
-                color: #8b949e;
-                font-weight: 600;
+                padding: 0 5px;
+                color: #007acc;
+                font-weight: bold;
+                background-color: transparent;
             }
             QPushButton {
-                background-color: #21262d;
-                border: 1px solid #30363d;
-                border-radius: 6px;
+                background-color: #0e639c;
+                border: none;
+                border-radius: 4px;
                 padding: 6px 14px;
-                color: #c9d1d9;
+                color: #ffffff;
                 font-weight: 500;
             }
             QPushButton:hover {
-                background-color: #30363d;
-                border-color: #8b949e;
+                background-color: #1177bb;
             }
             QPushButton:pressed {
-                background-color: #161b22;
+                background-color: #094771;
             }
             QComboBox {
-                background-color: #0d1117;
-                border: 1px solid #30363d;
-                border-radius: 6px;
+                background-color: #3c3c3c;
+                border: 1px solid #3e3e42;
+                border-radius: 4px;
                 padding: 6px;
-                color: #c9d1d9;
+                color: #cccccc;
+            }
+            QComboBox::drop-down {
+                border: none;
             }
             QProgressBar {
-                border: 1px solid #30363d;
-                border-radius: 6px;
+                border: 1px solid #3e3e42;
+                border-radius: 4px;
                 text-align: center;
-                background-color: #0d1117;
+                background-color: #3c3c3c;
                 color: transparent;
             }
             QProgressBar::chunk {
-                background-color: #238636;
-                border-radius: 5px;
+                background-color: #007acc;
+                border-radius: 3px;
             }
             QTextEdit {
-                background-color: #0d1117;
-                border: 1px solid #30363d;
-                border-radius: 8px;
-                color: #c9d1d9;
-                padding: 12px;
-                line-height: 1.5;
+                background-color: #1e1e1e;
+                border: 1px solid #3e3e42;
+                border-radius: 4px;
+                color: #cccccc;
+                padding: 8px;
             }
-            QLabel {
-                color: #8b949e;
-            }
-            QLabel[heading="true"] {
-                color: #f0f6fc;
-                font-weight: 600;
+            QScrollArea {
+                border: none;
+                background: transparent;
             }
         """)
 
         # Top Bar
         header_frame = QWidget()
-        header_frame.setFixedHeight(100)
-        header_frame.setStyleSheet("background-color: #161b22; border-bottom: 1px solid #30363d;")
+        header_frame.setFixedHeight(80)
+        header_frame.setStyleSheet("background-color: #252526; border-bottom: 1px solid #3e3e42;")
         header_layout = QHBoxLayout(header_frame)
         header_layout.setContentsMargins(30, 0, 30, 0)
 
         title_lbl = QLabel("LLMark")
-        title_lbl.setFont(QFont("Segoe UI", 32, QFont.Bold))
+        title_lbl.setFont(QFont("Segoe UI", 28, QFont.Bold))
         title_lbl.setProperty("heading", "true")
-        title_lbl.setStyleSheet("color: #f0f6fc; border: none;")
+        title_lbl.setStyleSheet("color: #007acc; border: none;")
         
         self.settings_btn = QPushButton()
-        self.settings_btn.setFixedSize(45, 45)
+        self.settings_btn.setFixedSize(40, 40)
         self.settings_btn.setToolTip("Settings")
         self.settings_btn.setCursor(Qt.PointingHandCursor)
+        self.settings_btn.setStyleSheet("background-color: transparent; border: none;")
         
         # Simple SVG Gear Icon
         gear_svg = """
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c9d1d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#cccccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
         </svg>
@@ -190,11 +198,11 @@ class MainWindow(QMainWindow):
         hw_layout = QHBoxLayout()
         hw_layout.setContentsMargins(15, 15, 15, 15)
         
-        cpu_lbl = QLabel(f"<span style='color: #8b949e;'>CPU:</span> <span style='color: #c9d1d9;'>{self.hardware_info['cpu']}</span>")
-        ram_lbl = QLabel(f"<span style='color: #8b949e;'>RAM:</span> <span style='color: #c9d1d9;'>{self.hardware_info['ram_total_gb']} GB</span>")
-        gpu_lbl = QLabel(f"<span style='color: #8b949e;'>GPU:</span> <span style='color: #c9d1d9;'>{self.hardware_info['gpu'] or 'N/A'}</span>")
+        cpu_lbl = QLabel(f"<span style='color: #858585;'>CPU:</span> <span style='color: #cccccc;'>{self.hardware_info['cpu']}</span>")
+        ram_lbl = QLabel(f"<span style='color: #858585;'>RAM:</span> <span style='color: #cccccc;'>{self.hardware_info['ram_total_gb']} GB</span>")
+        gpu_lbl = QLabel(f"<span style='color: #858585;'>GPU:</span> <span style='color: #cccccc;'>{self.hardware_info['gpu'] or 'N/A'}</span>")
         
-        vram_text = f"<span style='color: #8b949e;'>VRAM:</span> <span style='color: #c9d1d9;'>{self.hardware_info['vram_total_mb'] or 0} MB</span>"
+        vram_text = f"<span style='color: #858585;'>VRAM:</span> <span style='color: #cccccc;'>{self.hardware_info['vram_total_mb'] or 0} MB</span>"
         self.vram_lbl = QLabel(vram_text)
         
         hw_layout.addWidget(cpu_lbl)
@@ -253,13 +261,13 @@ class MainWindow(QMainWindow):
         # Judge Section
         judge_layout = QHBoxLayout()
         self.judge_status_lbl = QLabel("Checking...")
-        self.judge_status_lbl.setStyleSheet("color: #8b949e;")
+        self.judge_status_lbl.setStyleSheet("color: #858585;")
         judge_layout.addWidget(self.judge_status_lbl)
         
         self.install_judge_btn = QPushButton("Install Judge")
         self.install_judge_btn.setVisible(False)
         self.install_judge_btn.clicked.connect(self.install_judge)
-        self.install_judge_btn.setStyleSheet("background-color: #238636; color: white;")
+        self.install_judge_btn.setStyleSheet("background-color: #388a34; color: white; border: none; border-radius: 4px; padding: 6px 12px;")
         judge_layout.addWidget(self.install_judge_btn)
 
         form_layout.addRow("Judge Model:", judge_layout)
@@ -271,20 +279,20 @@ class MainWindow(QMainWindow):
         self.start_btn.setMinimumHeight(60)
         self.start_btn.setStyleSheet("""
             QPushButton {
-                background-color: #238636; 
+                background-color: #007acc; 
                 color: #ffffff; 
                 font-weight: 600; 
                 font-size: 16px;
-                border: 1px solid rgba(240, 246, 252, 0.1);
+                border: none;
                 border-radius: 6px;
+                padding: 10px;
             }
             QPushButton:hover {
-                background-color: #2ea043;
+                background-color: #0062a3;
             }
             QPushButton:disabled {
-                background-color: #21262d;
-                color: #484f58;
-                border-color: #30363d;
+                background-color: #3e3e42;
+                color: #6d6d6d;
             }
         """)
         self.start_btn.clicked.connect(self.start_benchmark)
@@ -308,7 +316,7 @@ class MainWindow(QMainWindow):
         
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
-        self.log_area.setStyleSheet("background-color: #0d1117; font-family: 'Consolas', monospace; border: 1px solid #30363d;")
+        self.log_area.setStyleSheet("background-color: #1e1e1e; color: #9cdcfe; font-family: 'Consolas', monospace; border: 1px solid #3e3e42;")
         p_layout.addWidget(self.log_area)
         
         self.progress_group.setLayout(p_layout)
@@ -318,12 +326,12 @@ class MainWindow(QMainWindow):
         from backend.benchmarks import JUDGE_MODEL
         if self.client.check_model_availability(JUDGE_MODEL):
             self.judge_status_lbl.setText(f"{JUDGE_MODEL} (Ready)")
-            self.judge_status_lbl.setStyleSheet("color: #3fb950; font-weight: bold;")
+            self.judge_status_lbl.setStyleSheet("color: #89d185; font-weight: bold;")
             self.install_judge_btn.setVisible(False)
             self.start_btn.setEnabled(True)
         else:
             self.judge_status_lbl.setText(f"{JUDGE_MODEL} (MISSING)")
-            self.judge_status_lbl.setStyleSheet("color: #f85149; font-weight: bold;")
+            self.judge_status_lbl.setStyleSheet("color: #f48771; font-weight: bold;")
             self.install_judge_btn.setVisible(True)
             self.start_btn.setEnabled(False)
 
@@ -370,20 +378,20 @@ class MainWindow(QMainWindow):
         self.results_table.verticalHeader().setVisible(False)
         self.results_table.setStyleSheet("""
             QTableWidget {
-                gridline-color: #30363d;
-                border: 1px solid #30363d;
+                gridline-color: #3e3e42;
+                border: 1px solid #3e3e42;
                 border-radius: 8px;
-                background-color: #0d1117;
-                alternate-background-color: #161b22;
-                color: #c9d1d9;
+                background-color: #1e1e1e;
+                alternate-background-color: #252526;
+                color: #cccccc;
             }
             QHeaderView::section {
-                background-color: #161b22;
+                background-color: #252526;
                 padding: 10px;
                 border: none;
-                border-bottom: 2px solid #30363d;
+                border-bottom: 2px solid #3e3e42;
                 font-weight: bold;
-                color: #58a6ff;
+                color: #007acc;
             }
         """)
         
@@ -392,7 +400,7 @@ class MainWindow(QMainWindow):
         self.total_score_lbl = QLabel("Total Score: 0/90")
         self.total_score_lbl.setFont(QFont("Segoe UI", 20, QFont.Bold))
         self.total_score_lbl.setAlignment(Qt.AlignRight)
-        self.total_score_lbl.setStyleSheet("color: #58a6ff; margin-top: 10px;")
+        self.total_score_lbl.setStyleSheet("color: #007acc; margin-top: 10px;")
         layout.addWidget(self.total_score_lbl)
         
         btn_layout = QHBoxLayout()
@@ -400,11 +408,12 @@ class MainWindow(QMainWindow):
         self.open_json_btn.setMinimumHeight(45)
         self.open_json_btn.setStyleSheet("""
             QPushButton {
-                background-color: #21262d; 
+                background-color: #2d2d2d; 
                 border-radius: 6px; 
                 padding: 0 25px;
+                color: #cccccc;
             }
-            QPushButton:hover { background-color: #30363d; }
+            QPushButton:hover { background-color: #3e3e42; }
         """)
         self.open_json_btn.clicked.connect(self.open_json_file)
         self.open_json_btn.setEnabled(False)
@@ -417,7 +426,7 @@ class MainWindow(QMainWindow):
         self.json_view = QTextEdit()
         self.json_view.setReadOnly(True)
         self.json_view.setFont(QFont("Consolas", 11))
-        self.json_view.setStyleSheet("background-color: #0d1117; color: #d1d5db; border: 1px solid #30363d;")
+        self.json_view.setStyleSheet("background-color: #1e1e1e; color: #ce9178; border: 1px solid #3e3e42;")
         layout.addWidget(self.json_view)
 
     def setup_detail_log_tab(self):
@@ -425,7 +434,7 @@ class MainWindow(QMainWindow):
         self.detail_log_view = QTextEdit()
         self.detail_log_view.setReadOnly(True)
         self.detail_log_view.setFont(QFont("Consolas", 11))
-        self.detail_log_view.setStyleSheet("background-color: #0d1117; color: #c9d1d9; border: 1px solid #30363d;")
+        self.detail_log_view.setStyleSheet("background-color: #1e1e1e; color: #9cdcfe; border: 1px solid #3e3e42;")
         layout.addWidget(self.detail_log_view)
 
     def load_models(self):
@@ -442,7 +451,7 @@ class MainWindow(QMainWindow):
     @Slot(float)
     def update_vram_display(self, used):
         total = self.hardware_info.get('vram_total_mb', 0)
-        vram_text = f"<span style='color: #8b949e;'>VRAM:</span> <span style='color: #c9d1d9;'>{total} MB (Used: {used} MB)</span>"
+        vram_text = f"<span style='color: #858585;'>VRAM:</span> <span style='color: #cccccc;'>{total} MB (Used: {used} MB)</span>"
         if hasattr(self, 'vram_lbl'):
              self.vram_lbl.setText(vram_text)
 
@@ -533,10 +542,10 @@ class MainWindow(QMainWindow):
         
         if "Error" in comment or result.get('score') == 0:
             status_item.setText(" FAIL ")
-            status_item.setBackground(QColor("#f85149"))
+            status_item.setBackground(QColor("#f48771"))
         else:
             status_item.setText(" PASS ")
-            status_item.setBackground(QColor("#238636"))
+            status_item.setBackground(QColor("#388a34"))
         
         status_item.setForeground(QColor("white"))
         self.results_table.setItem(row, 3, status_item)
@@ -581,25 +590,24 @@ class MainWindow(QMainWindow):
 
     def open_settings(self):
         from backend.ollama_client import get_config, save_config
-        config = get_config()
         
         dialog = QDialog(self)
         dialog.setWindowTitle("Settings")
         dialog.setMinimumWidth(400)
-        dialog.setStyleSheet("background-color: #0d1117; color: #c9d1d9;")
+        dialog.setStyleSheet("background-color: #1e1e1e; color: #cccccc;")
         dialog_layout = QVBoxLayout(dialog)
         
         form_layout = QFormLayout()
         url_input = QLineEdit(config.get("ollama_api_url", "http://localhost:11434/api"))
         url_input.setMinimumWidth(300)
-        url_input.setStyleSheet("background-color: #161b22; border: 1px solid #30363d; padding: 5px;")
+        url_input.setStyleSheet("background-color: #3c3c3c; border: 1px solid #3e3e42; padding: 5px; color: #cccccc;")
         form_layout.addRow("Ollama API URL:", url_input)
         dialog_layout.addLayout(form_layout)
         
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
-        buttons.setStyleSheet("QPushButton { background-color: #21262d; padding: 5px 15px; }")
+        buttons.setStyleSheet("QPushButton { background-color: #0e639c; color: white; padding: 5px 15px; }")
         dialog_layout.addWidget(buttons)
         
         if dialog.exec() == QDialog.Accepted:
