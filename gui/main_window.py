@@ -96,6 +96,7 @@ class MainWindow(QMainWindow):
                 padding: 0 5px;
                 color: #007acc;
                 font-weight: bold;
+                font-size: 16px;
                 background-color: transparent;
             }
             QPushButton {
@@ -148,13 +149,13 @@ class MainWindow(QMainWindow):
 
         # Top Bar
         header_frame = QWidget()
-        header_frame.setFixedHeight(80)
+        header_frame.setFixedHeight(120)
         header_frame.setStyleSheet("background-color: #252526; border-bottom: 1px solid #3e3e42;")
         header_layout = QHBoxLayout(header_frame)
         header_layout.setContentsMargins(30, 0, 30, 0)
 
         title_lbl = QLabel("LLMark")
-        title_lbl.setFont(QFont("Segoe UI", 28, QFont.Bold))
+        title_lbl.setFont(QFont("Segoe UI", 80, QFont.Bold))
         title_lbl.setProperty("heading", "true")
         title_lbl.setStyleSheet("color: #007acc; border: none;")
         
