@@ -171,6 +171,12 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.start_btn)
         
         # Progress Area
+        self.progress_group = QGroupBox("Progress")
+        p_layout = QVBoxLayout()
+        
+        self.overall_progress = QProgressBar()
+        self.overall_progress.setMaximum(10)
+        
         p_layout.addWidget(QLabel("Overall:"))
         p_layout.addWidget(self.overall_progress)
         
