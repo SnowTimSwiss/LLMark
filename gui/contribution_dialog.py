@@ -1,10 +1,13 @@
 
+import os
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QLabel, QPushButton, 
                                QLineEdit, QHBoxLayout, QMessageBox, QWidget, QFrame,
                                QTextEdit, QProgressBar)
 from PySide6.QtCore import Qt, QThread, Signal, QUrl
 from PySide6.QtGui import QDesktopServices
 from backend.contribution import ContributionManager
+
+TOKEN_FILE = ".token"
 
 class ContributionWorker(QThread):
     finished = Signal(bool, str) # success, message_or_url
@@ -25,19 +28,19 @@ class ContributionWorker(QThread):
 class ContributionDialog(QDialog):
     def __init__(self, benchmark_data, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Beitrag zum LLMark Benchmark")
+        self.setWindowTitle("Contribute to LLMark Benchmark")
         self.resize(500, 400)
         self.benchmark_data = benchmark_data
         
         layout = QVBoxLayout(self)
         
         # Header Info
-        lbl_info = QLabel("Möchten Sie Ihre Ergebnisse zum Community-Benchmark beitragen?")
+        lbl_info = QLabel("Do you want to contribute your results to the community benchmark?")
         lbl_info.setWordWrap(True)
         lbl_info.setStyleSheet("font-size: 14px; font-weight: bold; margin-bottom: 10px;")
         layout.addWidget(lbl_info)
         
-        lbl_sub = QLabel("Ihr Ergebnis wird als Pull Request submissions auf GitHub hochgeladen.")
+        lbl_sub = QLabel("Your results will be uploaded as a Pull Request to GitHub.")
         lbl_sub.setWordWrap(True)
         lbl_sub.setStyleSheet("color: #aaa; margin-bottom: 15px;")
         layout.addWidget(lbl_sub)
@@ -47,7 +50,7 @@ class ContributionDialog(QDialog):
         self.group_auth.setStyleSheet("background-color: #3b3b3b; border-radius: 5px; padding: 10px;")
         l_auth = QVBoxLayout(self.group_auth)
         
-        self.btn_auth_expand = QPushButton("Mit eigenem GitHub Account hochladen")
+        self.btn_auth_expand = QPushButton("Upload with your GitHub Account")
         self.btn_auth_expand.setCheckable(True)
         self.btn_auth_expand.clicked.connect(self.toggle_auth_view)
         l_auth.addWidget(self.btn_auth_expand)
@@ -57,8 +60,9 @@ class ContributionDialog(QDialog):
         l_input = QVBoxLayout(self.container_auth_input)
         l_input.setContentsMargins(0, 10, 0, 0)
         
-        l_help = QLabel('Benötigt einen <a href="https://github.com/settings/tokens/new">GitHub Access Token</a> (Set expiration to however long you want. | Just activate the public_repo scope, nothing more is needed).')
+        l_help = QLabel('Requires a <a href="https://github.com/settings/tokens/new">GitHub Access Token (Classic)</a>.<br>Scopes needed: <b>public_repo</b>.')
         l_help.setOpenExternalLinks(True)
+        l_help.setStyleSheet("color: #ccc;")
         l_input.addWidget(l_help)
         
         self.input_token = QLineEdit()
@@ -66,7 +70,7 @@ class ContributionDialog(QDialog):
         self.input_token.setEchoMode(QLineEdit.Password)
         l_input.addWidget(self.input_token)
         
-        self.btn_upload = QPushButton("Jetzt hochladen")
+        self.btn_upload = QPushButton("Upload Now")
         self.btn_upload.clicked.connect(self.start_upload)
         self.btn_upload.setStyleSheet("background-color: #007bff; font-weight: bold;")
         l_input.addWidget(self.btn_upload)
@@ -80,9 +84,9 @@ class ContributionDialog(QDialog):
         self.group_anon.setStyleSheet("background-color: #2b2b2b; border: 1px dashed #555; border-radius: 5px; padding: 10px; margin-top: 10px;")
         l_anon = QHBoxLayout(self.group_anon)
         
-        btn_anon = QPushButton("Anonym hochladen")
+        btn_anon = QPushButton("Upload Anonymously")
         btn_anon.setEnabled(False) # Disabled
-        btn_anon.setToolTip("Coming Soon - Requires Server Infrastructure")
+        btn_anon.setToolTip("Coming Soon")
         l_anon.addWidget(btn_anon)
         
         lbl_soon = QLabel("(Coming Soon)")
@@ -105,21 +109,45 @@ class ContributionDialog(QDialog):
         self.log_area.setVisible(False)
         layout.addWidget(self.log_area)
 
+        # Load Token
+        self.load_token()
+
     def toggle_auth_view(self):
         visible = self.btn_auth_expand.isChecked()
         self.container_auth_input.setVisible(visible)
 
+    def load_token(self):
+        if os.path.exists(TOKEN_FILE):
+            try:
+                with open(TOKEN_FILE, "r") as f:
+                    token = f.read().strip()
+                if token:
+                    self.input_token.setText(token)
+                    self.btn_auth_expand.setChecked(True)
+                    self.container_auth_input.setVisible(True)
+            except:
+                pass
+
+    def save_token(self, token):
+        try:
+            with open(TOKEN_FILE, "w") as f:
+                f.write(token)
+        except Exception as e:
+            print(f"Failed to save token: {e}")
+
     def start_upload(self):
         token = self.input_token.text().strip()
         if not token:
-            QMessageBox.warning(self, "Fehler", "Bitte geben Sie einen GitHub Token ein.")
+            QMessageBox.warning(self, "Error", "Please enter a GitHub Token.")
             return
             
+        self.save_token(token)
+        
         self.btn_upload.setEnabled(False)
         self.input_token.setEnabled(False)
         self.progress.setVisible(True)
         self.log_area.setVisible(True)
-        self.log("Starte Upload...")
+        self.log("Starting upload...")
         
         self.worker = ContributionWorker(token, self.benchmark_data)
         self.worker.finished.connect(self.on_upload_finished)
@@ -134,11 +162,11 @@ class ContributionDialog(QDialog):
         self.input_token.setEnabled(True)
         
         if success:
-            self.log("Upload erfolgreich!")
+            self.log("Upload successful!")
             self.log(f"PR URL: {result}")
-            QMessageBox.information(self, "Erfolg", "Benchmark erfolgreich hochgeladen!\nGitHub Pull Request wurde erstellt.")
+            QMessageBox.information(self, "Success", "Benchmark uploaded successfully!\nGitHub Pull Request created.")
             QDesktopServices.openUrl(QUrl(result))
             self.accept()
         else:
-            self.log(f"Fehler: {result}")
-            QMessageBox.critical(self, "Fehler", f"Upload fehlgeschlagen:\n{result}")
+            self.log(f"Error: {result}")
+            QMessageBox.critical(self, "Error", f"Upload failed:\n{result}")
