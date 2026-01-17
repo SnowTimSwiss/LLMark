@@ -195,12 +195,12 @@ class MainWindow(QMainWindow):
         from backend.benchmarks import JUDGE_MODEL
         if self.client.check_model_availability(JUDGE_MODEL):
             self.judge_status_lbl.setText(f"{JUDGE_MODEL} (Ready)")
-            self.judge_status_lbl.setStyleSheet("color: #00ff00; font-weight: bold;")
+            self.judge_status_lbl.setStyleSheet("color: #28a745; font-weight: bold;")
             self.install_judge_btn.setVisible(False)
             self.start_btn.setEnabled(True)
         else:
             self.judge_status_lbl.setText(f"{JUDGE_MODEL} (MISSING)")
-            self.judge_status_lbl.setStyleSheet("color: #ff4444; font-weight: bold;")
+            self.judge_status_lbl.setStyleSheet("color: #dc3545; font-weight: bold;")
             self.install_judge_btn.setVisible(True)
             self.start_btn.setEnabled(False)
 
@@ -235,18 +235,62 @@ class MainWindow(QMainWindow):
         self.results_table = QTableWidget()
         self.results_table.setColumnCount(4)
         self.results_table.setHorizontalHeaderLabels(["Benchmark", "Score / Value", "Comment", "Status"])
-        self.results_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.results_table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        self.results_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.results_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.results_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        self.results_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        self.results_table.setAlternatingRowColors(True)
+        self.results_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.results_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.results_table.verticalHeader().setVisible(False)
+        self.results_table.setStyleSheet("""
+            QTableWidget {
+                gridline-color: #e9ecef;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                background-color: white;
+                alternate-background-color: #f8f9fa;
+            }
+            QHeaderView::section {
+                background-color: #f1f3f5;
+                padding: 10px;
+                border: none;
+                border-bottom: 2px solid #dee2e6;
+                font-weight: bold;
+                color: #495057;
+            }
+        """)
+        
         layout.addWidget(self.results_table)
         
         self.total_score_lbl = QLabel("Total Score (Quality): 0/90")
-        self.total_score_lbl.setFont(QFont("Arial", 16, QFont.Bold))
+        self.total_score_lbl.setFont(QFont("Segoe UI", 18, QFont.Bold))
         self.total_score_lbl.setAlignment(Qt.AlignRight)
+        self.total_score_lbl.setStyleSheet("color: #212529; margin-top: 10px; margin-bottom: 10px;")
         layout.addWidget(self.total_score_lbl)
         
         btn_layout = QHBoxLayout()
         self.open_json_btn = QPushButton("JSON Datei öffnen")
+        self.open_json_btn.setMinimumHeight(40)
+        self.open_json_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #6c757d;
+                color: white;
+                border-radius: 6px;
+                font-weight: bold;
+                padding: 0 20px;
+            }
+            QPushButton:hover {
+                background-color: #5a6268;
+            }
+            QPushButton:disabled {
+                background-color: #adb5bd;
+            }
+        """)
         self.open_json_btn.clicked.connect(self.open_json_file)
         self.open_json_btn.setEnabled(False)
+        btn_layout.addStretch()
         btn_layout.addWidget(self.open_json_btn)
         layout.addLayout(btn_layout)
 
@@ -336,29 +380,41 @@ class MainWindow(QMainWindow):
         }
         
         name = name_map.get(bench_id, bench_id)
-        score = str(result.get('score', 0))
         comment = result.get('comment', '')
         
         if bench_id == "A":
-            score = f"{result.get('score', 0)} t/s"
+            score_text = f"{result.get('score', 0)} t/s"
         else:
-            score = str(result.get('score', 0))
+            score_text = str(result.get('score', 0))
 
-        self.results_table.setItem(row, 0, QTableWidgetItem(name))
-        self.results_table.setItem(row, 1, QTableWidgetItem(score))
-        self.results_table.setItem(row, 2, QTableWidgetItem(comment))
+        # Items
+        name_item = QTableWidgetItem(name)
+        score_item = QTableWidgetItem(score_text)
+        score_item.setTextAlignment(Qt.AlignCenter)
+        comment_item = QTableWidgetItem(comment)
         
-        # Color code
-        status_item = QTableWidgetItem("OK")
+        self.results_table.setItem(row, 0, name_item)
+        self.results_table.setItem(row, 1, score_item)
+        self.results_table.setItem(row, 2, comment_item)
+        
+        # Status Badges
+        status_item = QTableWidgetItem()
+        status_item.setTextAlignment(Qt.AlignCenter)
+        font = status_item.font()
+        font.setBold(True)
+        status_item.setFont(font)
+        
         if "Error" in comment:
-            status_item.setText("Fail")
-            status_item.setBackground(QColor("#ffcccc"))
+            status_item.setText(" FAIL ")
+            status_item.setForeground(QColor("#ffffff"))
+            status_item.setBackground(QColor("#e4606d")) # Soft red
         else:
-            status_item.setBackground(QColor("#ccffcc"))
-            # Dark mode friendly colors logic needed? 
-            # Simple text is better for now.
+            status_item.setText(" OK ")
+            status_item.setForeground(QColor("#ffffff"))
+            status_item.setBackground(QColor("#47c9a2")) # Pleasant green
         
         self.results_table.setItem(row, 3, status_item)
+        self.results_table.setRowHeight(row, 45)
 
     @Slot(dict)
     def on_all_finished(self, results):
