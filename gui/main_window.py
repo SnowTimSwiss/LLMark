@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                                QHeaderView, QMessageBox, QGroupBox, QFormLayout,
                                QDialog, QLineEdit, QDialogButtonBox)
 from PySide6.QtCore import Qt, Slot, QTimer, QSize
-from PySide6.QtGui import QFont, QColor, QIcon, QPixmap, QPainter
+from PySide6.QtGui import QFont, QColor, QIcon, QPixmap, QPainter, QTextCursor
 
 from backend.ollama_client import OllamaClient
 from backend.hardware import get_hardware_info
@@ -149,15 +149,14 @@ class MainWindow(QMainWindow):
 
         # Top Bar
         header_frame = QWidget()
-        header_frame.setFixedHeight(120)
+        header_frame.setFixedHeight(100)
         header_frame.setStyleSheet("background-color: #252526; border-bottom: 1px solid #3e3e42;")
         header_layout = QHBoxLayout(header_frame)
         header_layout.setContentsMargins(30, 0, 30, 0)
 
-        title_lbl = QLabel("LLMark")
-        title_lbl.setFont(QFont("Segoe UI", 80, QFont.Bold))
+        title_lbl = QLabel("LLMark-Suite")
         title_lbl.setProperty("heading", "true")
-        title_lbl.setStyleSheet("color: #007acc; border: none;")
+        title_lbl.setStyleSheet("color: #007acc; border: none; font-family: 'Segoe UI'; font-size: 60px; font-weight: bold;")
         
         self.settings_btn = QPushButton()
         self.settings_btn.setFixedSize(40, 40)
@@ -507,7 +506,7 @@ class MainWindow(QMainWindow):
     def on_stream_chunk(self, chunk):
         # Insert chunk at the end of detail log
         cursor = self.detail_log_view.textCursor()
-        cursor.movePosition(cursor.End)
+        cursor.movePosition(QTextCursor.MoveOperation.End)
         cursor.insertText(chunk)
         self.detail_log_view.setTextCursor(cursor)
         self.detail_log_view.ensureCursorVisible()

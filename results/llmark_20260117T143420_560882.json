@@ -1,0 +1,169 @@
+{
+  "benchmarks": [
+    {
+      "comment": "109.26 tokens/sec",
+      "details": {
+        "tokens": 83,
+        "tokens_per_sec": 109.26,
+        "total_time_s": 1.097
+      },
+      "metrics": {
+        "avg_vram_mb": 3894.13,
+        "gpu_detected": true,
+        "peak_vram_mb": 5261.43
+      },
+      "name": "A",
+      "raw_response_preview": "One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Eleven, Twelve, Thirteen, Fourteen, Fifteen, Sixteen, Seventeen, Eighteen, Nineteen, Twenty-One, Twenty-Two, ... Ninety-Nine, One Hundred, On",
+      "score": 109.26
+    },
+    {
+      "comment": "The email has a professional tone and clear subject line but lacks factual content, contains unnecessary information, and unclear references to policies.",
+      "issues": [
+        "Missing facts section",
+        "Unnecessary personal details (address and account number)",
+        "Incorrect payment instructions format",
+        "Unclear internal policy reference"
+      ],
+      "metrics": {
+        "avg_vram_mb": 5256.0,
+        "gpu_detected": true,
+        "peak_vram_mb": 5266.43
+      },
+      "name": "B",
+      "score": 6
+    },
+    {
+      "comment": "The letter is formal and includes a clear subject line, but it lacks factual content as per the instructions. Additionally, there are inaccuracies regarding currency and late fee details.",
+      "issues": [
+        "Missing facts section",
+        "Incorrect currency (CHF instead of EUR)",
+        "Inaccurate information about late fees"
+      ],
+      "metrics": {
+        "avg_vram_mb": 5245.82,
+        "gpu_detected": true,
+        "peak_vram_mb": 5245.82
+      },
+      "name": "C",
+      "score": 6
+    },
+    {
+      "comment": "The response contains several inaccuracies and misunderstandings, particularly around the boiling point of water and Albert Einstein's Nobel Prize. These errors significantly impact the score despite some correct answers.",
+      "issues": [
+        "Incorrect statement about boiling point in fact 3",
+        "Misstatement regarding Albert Einstein's Nobel Prize in fact 8"
+      ],
+      "metrics": {
+        "avg_vram_mb": 5248.35,
+        "gpu_detected": true,
+        "peak_vram_mb": 5257.93
+      },
+      "name": "D",
+      "score": 6
+    },
+    {
+      "comment": "The response lacks factual content related to the task and includes inaccuracies such as mentioning Project X completion which was not part of the given model answer. The structure is confusing, mixing up tasks with issues without clear differentiation.",
+      "issues": [
+        "Missing facts",
+        "Poor structure",
+        "Incomplete information"
+      ],
+      "metrics": {
+        "avg_vram_mb": 5247.61,
+        "gpu_detected": true,
+        "peak_vram_mb": 5252.41
+      },
+      "name": "E",
+      "score": 4
+    },
+    {
+      "comment": "The submission fails to address the lack of initial facts and provides a generic timetable that may or may not meet unspecified requirements. The evaluation criteria cannot be met due to missing input.",
+      "issues": [
+        "No facts provided to satisfy",
+        "Model answer does not align with non-existent facts",
+        "Schedule is fabricated without given constraints"
+      ],
+      "metrics": {
+        "avg_vram_mb": 5246.01,
+        "gpu_detected": true,
+        "peak_vram_mb": 5252.41
+      },
+      "name": "F",
+      "score": 2
+    },
+    {
+      "comment": "The piece effectively captures a cyberpunk-noir atmosphere with intricate details and compelling characters. It includes all required elements and maintains an engaging narrative throughout. However, minor issues with pacing and sentence complexity slightly detract from the overall quality.",
+      "issues": [
+        "The story occasionally veers into exposition rather than action, which can disrupt the flow.",
+        "Some sentences are overly complex and could be simplified for better readability."
+      ],
+      "metrics": {
+        "avg_vram_mb": 5241.28,
+        "gpu_detected": true,
+        "peak_vram_mb": 5276.96
+      },
+      "name": "G",
+      "score": 8
+    },
+    {
+      "comment": "The answer is very understandable for an 8-year-old and uses a good analogy. However, it slightly misrepresents the concept of quantum entanglement by implying that signals are not sent through air or space (which isn't entirely correct as there's no signal at all). The tone and length are appropriate.",
+      "issues": [
+        "The explanation could be more scientifically accurate without losing simplicity"
+      ],
+      "metrics": {
+        "avg_vram_mb": 5246.13,
+        "gpu_detected": true,
+        "peak_vram_mb": 5246.13
+      },
+      "name": "H",
+      "score": 8
+    },
+    {
+      "comment": "The solution is well-structured and meets all specified criteria with correct logic. However, there's an issue in the example provided which slightly affects its completeness.",
+      "issues": [
+        "The example call provided does not correctly reflect the criteria; 'VeryStrongP@ssword1' should return False as it lacks a special character from the defined set (!@#$%^&*)."
+      ],
+      "metrics": {
+        "avg_vram_mb": 5233.55,
+        "gpu_detected": true,
+        "peak_vram_mb": 5248.63
+      },
+      "name": "I",
+      "score": 9
+    },
+    {
+      "comment": "The response is empathetic, offers concrete steps for resolution, avoids hollow phrases, and maintains a professional tone. However, it slightly leans on some standard phrases and could provide clearer details regarding immediate assistance.",
+      "issues": [
+        "Minor use of standard phrases like 'Urgent Assistance' and 'high-priority search'",
+        "Could be more specific about the immediate assistance through an emergency purchase option"
+      ],
+      "metrics": {
+        "avg_vram_mb": 5242.08,
+        "gpu_detected": true,
+        "peak_vram_mb": 5246.13
+      },
+      "name": "J",
+      "score": 8
+    }
+  ],
+  "date": "2026-01-17T14:34:20.560882",
+  "judge_model": "qwen2.5:14b-instruct",
+  "model": "phi4-mini:latest",
+  "model_details": {
+    "context_length": null,
+    "family": "phi3",
+    "parameter_size": "3.8B",
+    "quantization": "Q4_K_M"
+  },
+  "model_estimated_vram_usage_mb": 3894.13,
+  "system": {
+    "cpu": "11th Gen Intel(R) Core(TM) i5-11400F @ 2.60GHz",
+    "date_utc": "2026-01-17T14:34:20.560882",
+    "gpu": "AMD Radeon RX 6700 XT",
+    "os": "Windows 11",
+    "ram_total_gb": 31.84,
+    "vram_total_mb": 12272.0,
+    "vram_used_mb": 1358.05
+  },
+  "total_score": 57
+}
