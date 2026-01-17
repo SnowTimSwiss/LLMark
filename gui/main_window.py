@@ -43,48 +43,57 @@ class MainWindow(QMainWindow):
         # Apply Global Dark Theme Style
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #0f1115;
+                background-color: #0d1117;
             }
             QWidget {
-                color: #e0e0e0;
-                font-family: 'Segoe UI', 'Roboto', sans-serif;
+                color: #c9d1d9;
+                font-family: 'Segoe UI', 'Roboto', 'Inter', sans-serif;
             }
             QTabWidget::pane {
-                border-top: 2px solid #2d333b;
-                background: #161b22;
+                border: 1px solid #30363d;
+                background: #0d1117;
+                border-radius: 6px;
+                top: -1px;
             }
             QTabBar::tab {
-                background: #0d1117;
+                background: #161b22;
                 color: #8b949e;
-                padding: 12px 25px;
-                border-top-left-radius: 8px;
-                border-top-right-radius: 8px;
+                padding: 10px 20px;
+                border: 1px solid #30363d;
+                border-bottom: none;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
                 margin-right: 4px;
+                font-weight: 500;
             }
             QTabBar::tab:selected {
-                background: #161b22;
-                color: #58a6ff;
-                border-bottom: 2px solid #58a6ff;
+                background: #0d1117;
+                color: #f0f6fc;
+                border-top: 2px solid #f78166;
+            }
+            QTabBar::tab:hover {
+                background: #21262d;
+                color: #f0f6fc;
             }
             QGroupBox {
                 border: 1px solid #30363d;
-                border-radius: 10px;
-                margin-top: 15px;
-                font-weight: bold;
-                padding-top: 10px;
-                background-color: #0d1117;
+                border-radius: 8px;
+                margin-top: 20px;
+                padding-top: 15px;
+                background-color: #161b22;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 15px;
-                padding: 0 5px;
-                color: #58a6ff;
+                left: 10px;
+                padding: 0 8px;
+                color: #8b949e;
+                font-weight: 600;
             }
             QPushButton {
                 background-color: #21262d;
                 border: 1px solid #30363d;
                 border-radius: 6px;
-                padding: 8px 16px;
+                padding: 6px 14px;
                 color: #c9d1d9;
                 font-weight: 500;
             }
@@ -99,29 +108,34 @@ class MainWindow(QMainWindow):
                 background-color: #0d1117;
                 border: 1px solid #30363d;
                 border-radius: 6px;
-                padding: 5px;
+                padding: 6px;
                 color: #c9d1d9;
             }
             QProgressBar {
                 border: 1px solid #30363d;
-                border-radius: 5px;
+                border-radius: 6px;
                 text-align: center;
                 background-color: #0d1117;
-                color: white;
+                color: transparent;
             }
             QProgressBar::chunk {
                 background-color: #238636;
-                border-radius: 4px;
+                border-radius: 5px;
             }
             QTextEdit {
                 background-color: #0d1117;
                 border: 1px solid #30363d;
                 border-radius: 8px;
                 color: #c9d1d9;
-                padding: 10px;
+                padding: 12px;
+                line-height: 1.5;
             }
             QLabel {
-                color: #c9d1d9;
+                color: #8b949e;
+            }
+            QLabel[heading="true"] {
+                color: #f0f6fc;
+                font-weight: 600;
             }
         """)
 
@@ -133,8 +147,9 @@ class MainWindow(QMainWindow):
         header_layout.setContentsMargins(30, 0, 30, 0)
 
         title_lbl = QLabel("LLMark")
-        title_lbl.setFont(QFont("Segoe UI", 28, QFont.Bold))
-        title_lbl.setStyleSheet("color: #58a6ff; border: none;")
+        title_lbl.setFont(QFont("Segoe UI", 32, QFont.Bold))
+        title_lbl.setProperty("heading", "true")
+        title_lbl.setStyleSheet("color: #f0f6fc; border: none;")
         
         self.settings_btn = QPushButton()
         self.settings_btn.setFixedSize(45, 45)
@@ -175,11 +190,11 @@ class MainWindow(QMainWindow):
         hw_layout = QHBoxLayout()
         hw_layout.setContentsMargins(15, 15, 15, 15)
         
-        cpu_lbl = QLabel(f"<b>CPU:</b> {self.hardware_info['cpu']}")
-        ram_lbl = QLabel(f"<b>RAM:</b> {self.hardware_info['ram_total_gb']} GB")
-        gpu_lbl = QLabel(f"<b>GPU:</b> {self.hardware_info['gpu'] or 'N/A'}")
+        cpu_lbl = QLabel(f"<span style='color: #8b949e;'>CPU:</span> <span style='color: #c9d1d9;'>{self.hardware_info['cpu']}</span>")
+        ram_lbl = QLabel(f"<span style='color: #8b949e;'>RAM:</span> <span style='color: #c9d1d9;'>{self.hardware_info['ram_total_gb']} GB</span>")
+        gpu_lbl = QLabel(f"<span style='color: #8b949e;'>GPU:</span> <span style='color: #c9d1d9;'>{self.hardware_info['gpu'] or 'N/A'}</span>")
         
-        vram_text = f"<b>VRAM:</b> {self.hardware_info['vram_total_mb'] or 0} MB"
+        vram_text = f"<span style='color: #8b949e;'>VRAM:</span> <span style='color: #c9d1d9;'>{self.hardware_info['vram_total_mb'] or 0} MB</span>"
         self.vram_lbl = QLabel(vram_text)
         
         hw_layout.addWidget(cpu_lbl)
@@ -257,18 +272,19 @@ class MainWindow(QMainWindow):
         self.start_btn.setStyleSheet("""
             QPushButton {
                 background-color: #238636; 
-                color: white; 
-                font-weight: bold; 
-                font-size: 18px;
-                border: none;
-                border-radius: 8px;
+                color: #ffffff; 
+                font-weight: 600; 
+                font-size: 16px;
+                border: 1px solid rgba(240, 246, 252, 0.1);
+                border-radius: 6px;
             }
             QPushButton:hover {
                 background-color: #2ea043;
             }
             QPushButton:disabled {
-                background-color: #1b4d24;
-                color: #8b949e;
+                background-color: #21262d;
+                color: #484f58;
+                border-color: #30363d;
             }
         """)
         self.start_btn.clicked.connect(self.start_benchmark)
@@ -286,7 +302,8 @@ class MainWindow(QMainWindow):
         p_layout.addWidget(self.overall_progress)
         
         self.current_task_lbl = QLabel("System Ready")
-        self.current_task_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #58a6ff;")
+        self.current_task_lbl.setProperty("heading", "true")
+        self.current_task_lbl.setStyleSheet("font-size: 14px;")
         p_layout.addWidget(self.current_task_lbl)
         
         self.log_area = QTextEdit()
@@ -425,7 +442,7 @@ class MainWindow(QMainWindow):
     @Slot(float)
     def update_vram_display(self, used):
         total = self.hardware_info.get('vram_total_mb', 0)
-        vram_text = f"<b>VRAM:</b> {total} MB (Used: {used} MB)"
+        vram_text = f"<span style='color: #8b949e;'>VRAM:</span> <span style='color: #c9d1d9;'>{total} MB (Used: {used} MB)</span>"
         if hasattr(self, 'vram_lbl'):
              self.vram_lbl.setText(vram_text)
 
