@@ -1,59 +1,101 @@
-# LLMark
+# 🚀 LLMark: Comprehensive Local LLM Benchmarking
 
-LLMark ist ein leistungsstarkes, lokales Benchmark-Tool für LLMs via Ollama. Es kombiniert objektive Leistungsmessung mit einer KI-gestützten Qualitätsbewertung durch ein festes Judge-Modell.
+LLMark is a powerful, local benchmarking suite for Large Language Models (LLMs) running via **Ollama**. It combines precise hardware performance metrics with high-level qualitative analysis using an automated "Judge-in-the-Loop" architecture.
 
-## Features
-
-- **Echtzeit-VRAM-Monitoring**: Überwachen Sie Ihren Grafikspeicher live direkt im GUI (alle 2 Sekunden aktualisierend).
-- **Präzise Geschwindigkeitsmessung**: Benchmark A misst die tatsächliche Token-Generierungsrate (Tokens/Sekunde).
-- **KI-Fokussierte Bewertung**: Benchmarks B-J werden durch das Judge-Modell (`qwen2.5:14b-instruct`) auf einer Skala von 1-10 bewertet.
-- **Responsive GUI**: Dank Hintergrund-Threading bleibt das Interface auch während Hardware-Checks und Benchmarks flüssig.
-
-## Voraussetzungen
-
-1. **Python 3.11+**
-2. **Ollama** installiert und laufend.
-3. **Judge Modell**: `qwen2.5:14b-instruct` (wird benötigt für die Qualitätsbewertung).
-
-## Installation
-
-1. Installieren Sie die Python-Abhängigkeiten:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Laden Sie das Judge-Modell herunter:
-   ```bash
-   ollama pull qwen2.5:14b-instruct
-   ```
-
-## Start
-
-Starten Sie die Anwendung am besten direkt über den Python-Interpreter Ihres Virtual Environments:
-
-```bash
-.venv\Scripts\python.exe app.py
-```
-
-## Nutzung
-
-1. Wählen Sie das zu testende Modell aus der Liste.
-2. Klicken Sie auf **"Start Benchmark"**.
-3. Verfolgen Sie den Fortschritt in den Tabs "Start" und "Detail-Log".
-4. Nach Abschluss werden die Ergebnisse als JSON in `/results` gespeichert und direkt im GUI angezeigt.
-
-## Benchmarks Übersicht
-
-- **A: Geschwindigkeit**: Misst Tokens pro Sekunde (TPS).
-- **B: English Quality**: Verfassen einer formellen Business-Email.
-- **C: Deutsch Qualität**: Erstellen einer formellen Mahnung.
-- **D: Fakten**: Multi-Fakten-Check (Geschichte, Wissenschaft, Geografie).
-- **E: Kontext**: Informationsextraktion aus einem Meeting-Transkript.
-- **F: Logik**: Lösung eines komplexen Stundenplan-Problems.
-- **G: Kreativität**: Storytelling im Cyberpunk-Noir Stil mit festen Begriffen.
-- **H: ELI5**: Technische Vereinfachung (Quantenverschränkung für Kinder).
-- **I: Programmierung**: Python-Funktion für Passwort-Validierung.
-- **J: Rollenspiel**: Empathische Deeskalation im Kundensupport.
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local%20AI-orange.svg)](https://ollama.ai/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
-*Hinweis: Der Gesamt-Score (max. 90) berechnet sich aus der Qualität der Benchmarks B bis J.*
+
+## ✨ Key Features
+
+-   **⚡ Live VRAM Monitoring**: Dashboard updates every 2 seconds, showing real-time VRAM usage for both NVIDIA and AMD GPUs.
+-   **📈 Precision Throughput (TPS)**: Benchmark A measures actual token generation speed (Tokens Per Second) with a dedicated warmup phase.
+-   **🤖 Automated AI Judge**: Benchmarks B-J are evaluated by a sophisticated judge model (`qwen2.5:14b-instruct`) on a scale of 1-10, providing objective scoring and detailed feedback.
+-   **🎨 Premium Dark UI**: A fluid, responsive desktop interface built with PySide6, featuring background threading to keep the experience lag-free during intense hardware tests.
+-   **🔍 Detailed Insights**: Access raw model responses, judge reasoning, and hardware metrics for every test.
+-   **📂 Result Archiving**: Every run is saved as a structured JSON file in the `/results` directory for historical tracking.
+
+---
+
+## 🏗️ Benchmark Suite Overview
+
+LLMark tests models across 10 specialized categories:
+
+| ID | Category | Description |
+| :--- | :--- | :--- |
+| **A** | **Speed** | Measures throughput (Tokens/sec) using a long generation task. |
+| **B** | **English Quality** | Writing a formal business email with 10+ specific facts. |
+| **C** | **German Quality** | Drafting a formal "Mahnung" (payment reminder) in German. |
+| **D** | **Fact Checking** | Multi-fact verification across history, science, and geography. |
+| **E** | **Context** | Information extraction and summarization from meeting transcripts. |
+| **F** | **Logic** | Solving complex constraint-satisfaction problems (Timetabling). |
+| **G** | **Creativity** | Narrative storytelling in a Cyberpunk-Noir setting with fixed terms. |
+| **H** | **ELI5** | Explaining Quantum Entanglement to an 8-year-old child. |
+| **I** | **Programming** | Writing robust, documentated Python code for password validation. |
+| **J** | **Roleplay** | Empathic de-escalation in a customer support scenario. |
+
+---
+
+## ⚙️ Prerequisites
+
+1.  **Python 3.11+**
+2.  **Ollama** installed and running.
+3.  **Hardware**: A GPU with sufficient VRAM to run your target model and the **Judge Model** simultaneously (or sequentially).
+4.  **Judge Model**: You must have `qwen2.5:14b-instruct` pulled in Ollama.
+    ```bash
+    ollama pull qwen2.5:14b-instruct
+    ```
+
+---
+
+## 🚀 Installation & Setup
+
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/YourUsername/LLMark.git
+    cd LLMark
+    ```
+
+2.  **Install Dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Run the Application**
+    ```bash
+    python app.py
+    ```
+    *(Or use the provided `start.bat` on Windows)*
+
+---
+
+## 🎮 How to Use
+
+1.  **Select Model**: Choose the LLM you want to benchmark from the dropdown (fetched automatically from your local Ollama library).
+2.  **Start Benchmark**: Hit the "Start Benchmark" button.
+3.  **Monitor**: Watch the progress bar and real-time VRAM usage. Check the **"Detail-Log"** tab for live output from the model and the judge.
+4.  **Analyze**: Review the final scores (out of 90 for qualitative tests + TPS score).
+5.  **Export**: Results are automatically saved to the `results/` folder for every run.
+
+---
+
+## 🛠️ Architecture
+
+LLMark uses a **dual-model setup**:
+-   **Target Model**: The model you are testing.
+-   **Judge Model**: `qwen2.5:14b-instruct` acts as a "fixed reference" to evaluate the Target Model's output quality based on strict rubrics.
+
+> [!NOTE]
+> The total score (max 90) is calculated based on the quality benchmarks (B-J). Speed (A) is reported separately as an absolute metric.
+
+---
+
+## 📜 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+*Built for the local LLM community. Happy Benchmarking!* 🚀
