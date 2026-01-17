@@ -1,0 +1,6 @@
+PySide6
+requests
+pynvml
+psutil
+py-cpuinfo
+PySide6-Addons
