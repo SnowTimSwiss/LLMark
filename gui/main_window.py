@@ -162,7 +162,19 @@ class MainWindow(QMainWindow):
         self.settings_btn.setFixedSize(40, 40)
         self.settings_btn.setToolTip("Settings")
         self.settings_btn.setCursor(Qt.PointingHandCursor)
-        self.settings_btn.setStyleSheet("background-color: transparent; border: none;")
+        self.settings_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #3e3e42;
+            }
+            QPushButton:pressed {
+                background-color: #333333;
+            }
+        """)
         
         # Simple SVG Gear Icon
         gear_svg = """
@@ -590,6 +602,7 @@ class MainWindow(QMainWindow):
 
     def open_settings(self):
         from backend.ollama_client import get_config, save_config
+        config = get_config()
         
         dialog = QDialog(self)
         dialog.setWindowTitle("Settings")
