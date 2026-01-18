@@ -486,7 +486,11 @@ class MainWindow(QMainWindow):
         self.detail_log_view.clear()
         self.overall_progress.setValue(0)
         
-        self.worker = BenchmarkWorker(test_model, self.hardware_info)
+        from backend.ollama_client import get_config
+        config = get_config()
+        context_window = config.get("context_window")
+        
+        self.worker = BenchmarkWorker(test_model, self.hardware_info, context_window=context_window)
         self.worker.progress_update.connect(self.on_progress)
         self.worker.verbose_log.connect(self.on_verbose_log)
         self.worker.stream_chunk.connect(self.on_stream_chunk)
@@ -626,6 +630,12 @@ class MainWindow(QMainWindow):
         url_input.setMinimumWidth(300)
         url_input.setStyleSheet("background-color: #3c3c3c; border: 1px solid #3e3e42; padding: 5px; color: #cccccc;")
         form_layout.addRow("Ollama API URL:", url_input)
+        
+        ctx_input = QLineEdit(str(config.get("context_window", "")))
+        ctx_input.setPlaceholderText("e.g. 4096 (Leave empty for model default)")
+        ctx_input.setStyleSheet("background-color: #3c3c3c; border: 1px solid #3e3e42; padding: 5px; color: #cccccc;")
+        form_layout.addRow("Context Window:", ctx_input)
+        
         dialog_layout.addLayout(form_layout)
         
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -636,9 +646,21 @@ class MainWindow(QMainWindow):
         
         if dialog.exec() == QDialog.Accepted:
             new_url = url_input.text().strip()
+            new_ctx = ctx_input.text().strip()
+            
             if new_url:
                 config["ollama_api_url"] = new_url
-                save_config(config)
                 self.client.base_url = new_url
-                QMessageBox.information(self, "Success", "Ollama API URL updated.")
-                self.load_models()
+            
+            if new_ctx:
+                try:
+                    config["context_window"] = int(new_ctx)
+                except ValueError:
+                    QMessageBox.warning(self, "Error", "Context Window must be a number.")
+                    return
+            else:
+                config["context_window"] = None
+                
+            save_config(config)
+            QMessageBox.information(self, "Success", "Settings updated.")
+            self.load_models()

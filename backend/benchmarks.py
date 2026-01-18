@@ -16,18 +16,18 @@ class BenchmarkRunner:
 
     # -------------------- PUBLIC --------------------
 
-    def run_benchmark(self, bench_id: str, test_model: str, progress_callback=None):
+    def run_benchmark(self, bench_id: str, test_model: str, options=None, progress_callback=None):
         bench_id = bench_id.upper()
         if bench_id == "A":
-            return self._run_speed(test_model, progress_callback)
+            return self._run_speed(test_model, options=options, progress_callback=progress_callback)
         elif bench_id in list("BCDEFGHIJ"):
-            return self._run_content(bench_id, test_model, progress_callback)
+            return self._run_content(bench_id, test_model, options=options, progress_callback=progress_callback)
         else:
             return {"error": "Unknown benchmark id"}
 
     # -------------------- SPEED --------------------
 
-    def _run_speed(self, test_model, progress_callback=None):
+    def _run_speed(self, test_model, options=None, progress_callback=None):
         if progress_callback:
             progress_callback("Warmup (speed)...")
 
@@ -35,7 +35,7 @@ class BenchmarkRunner:
 
         # Warmup
         try:
-            _ = self.client.generate(test_model, prompt, stream=False)
+            _ = self.client.generate(test_model, prompt, options=options, stream=False)
         except Exception:
             pass
 
@@ -43,7 +43,7 @@ class BenchmarkRunner:
             progress_callback("Measuring speed...")
 
         start_t = time.time()
-        res = self.client.generate(test_model, prompt, stream=False)
+        res = self.client.generate(test_model, prompt, options=options, stream=False)
         end_t = time.time()
         elapsed = max(end_t - start_t, 1e-9)
 
@@ -68,10 +68,10 @@ class BenchmarkRunner:
 
     # -------------------- CONTENT BENCHMARKS --------------------
 
-    def generate_response(self, bench_id, test_model, stream=False):
+    def generate_response(self, bench_id, test_model, options=None, stream=False):
         bench_def = self.get_benchmark_def(bench_id)
         try:
-            return self.client.generate(test_model, bench_def["prompt"], stream=stream), None
+            return self.client.generate(test_model, bench_def["prompt"], options=options, stream=stream), None
         except Exception as e:
             return None if stream else "", str(e)
 
@@ -79,14 +79,14 @@ class BenchmarkRunner:
         bench_def = self.get_benchmark_def(bench_id)
         return self._judge_response(bench_id, model_text, bench_def)
 
-    def _run_content(self, bench_id, test_model, progress_callback=None):
+    def _run_content(self, bench_id, test_model, options=None, progress_callback=None):
         if test_model == JUDGE_MODEL:
             return {"name": bench_id, "score": 0, "comment": "Test model must not equal judge model", "issues": []}
 
         if progress_callback:
             progress_callback(f"Generating response for benchmark {bench_id}...")
 
-        res, error = self.generate_response(bench_id, test_model)
+        res, error = self.generate_response(bench_id, test_model, options=options)
         if error:
             return {"name": bench_id, "score": 0, "comment": f"Generation error: {error}", "issues": [error]}
 

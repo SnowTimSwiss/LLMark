@@ -36,10 +36,11 @@ class BenchmarkWorker(QThread):
     all_finished = Signal(dict) # full results
     error_occurred = Signal(str)
 
-    def __init__(self, test_model, hardware_info):
+    def __init__(self, test_model, hardware_info, context_window=None):
         super().__init__()
         self.test_model = test_model
         self.hardware_info = hardware_info
+        self.context_window = context_window
         self.client = OllamaClient()
         self.runner = BenchmarkRunner(self.client)
         self.running = True
@@ -68,12 +69,27 @@ class BenchmarkWorker(QThread):
         params = model_info.get("parameters", {})
         if not isinstance(params, dict): params = {}
 
+        m_ctx = m_info.get("llama.context_length")
+        if not m_ctx and isinstance(params, str):
+            import re
+            match = re.search(r"num_ctx\s+(\d+)", params)
+            if match:
+                m_ctx = int(match.group(1))
+
+        # Override with user setting if provided
+        final_context = self.context_window if self.context_window else m_ctx
+
         full_results["model_details"] = {
             "quantization": details.get("quantization_level"),
-            "context_length": m_info.get("llama.context_length") or params.get("num_ctx"),
+            "context_length": final_context,
             "parameter_size": details.get("parameter_size"),
             "family": details.get("family")
         }
+
+        # Set runner options
+        runner_options = {}
+        if self.context_window:
+            runner_options["num_ctx"] = int(self.context_window)
 
         # 1. Benchmark A: Speed (Remains separate as it measures performance)
         if self.running:
@@ -83,7 +99,7 @@ class BenchmarkWorker(QThread):
             monitor = HardwareMonitor()
             monitor.start()
             
-            res_a = self.runner.run_benchmark("A", self.test_model, progress_callback=lambda m: self.progress_update.emit("A", m))
+            res_a = self.runner.run_benchmark("A", self.test_model, options=runner_options, progress_callback=lambda m: self.progress_update.emit("A", m))
             
             monitor.stop()
             
@@ -116,7 +132,7 @@ class BenchmarkWorker(QThread):
             monitor = HardwareMonitor()
             monitor.start()
             
-            stream_gen, error = self.runner.generate_response(b_id, self.test_model, stream=True)
+            stream_gen, error = self.runner.generate_response(b_id, self.test_model, options=runner_options, stream=True)
             
             full_response = ""
             if error:
