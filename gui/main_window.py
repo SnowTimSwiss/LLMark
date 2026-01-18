@@ -410,7 +410,7 @@ class MainWindow(QMainWindow):
         
         layout.addWidget(self.results_table)
         
-        self.total_score_lbl = QLabel("Total Score: 0/90")
+        self.total_score_lbl = QLabel("Total Score: 0/110")
         self.total_score_lbl.setFont(QFont("Segoe UI", 20, QFont.Bold))
         self.total_score_lbl.setAlignment(Qt.AlignRight)
         self.total_score_lbl.setStyleSheet("color: #007acc; margin-top: 10px;")
@@ -481,7 +481,7 @@ class MainWindow(QMainWindow):
 
         self.start_btn.setEnabled(False)
         self.results_table.setRowCount(0)
-        self.total_score_lbl.setText("Total Score: 0/90")
+        self.total_score_lbl.setText("Total Score: 0/110")
         self.log_area.clear()
         self.detail_log_view.clear()
         self.overall_progress.setValue(0)
@@ -530,9 +530,11 @@ class MainWindow(QMainWindow):
             "E": "E: Context Extr.",
             "F": "F: Logic/Timetable",
             "G": "G: Creative Writing",
-            "H": "H: ELI5 Complexity",
+            "H": "H: Technical Expl.",
             "I": "I: Python Coding",
-            "J": "J: Customer Support"
+            "J": "J: Customer Support",
+            "W": "W: Knowledge",
+            "X": "X: Uncertainty"
         }
         
         # Use description from result if available, otherwise fallback to name_map
@@ -581,8 +583,8 @@ class MainWindow(QMainWindow):
         self.current_task_lbl.setText("Benchmark Completed")
         self.log("All tasks finished successfully.")
         
-        quality_score = sum(b['score'] for b in results['benchmarks'] if b.get('id') in list("BCDEFGHIJ"))
-        self.total_score_lbl.setText(f"Total Quality Score: {quality_score}/90")
+        quality_score = sum(b['score'] for b in results['benchmarks'] if b.get('id') in list("BCDEFGHIJWX"))
+        self.total_score_lbl.setText(f"Total Quality Score: {quality_score}/110")
         
         if not os.path.exists("results"):
             os.makedirs("results")

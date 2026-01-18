@@ -51,8 +51,8 @@ class BenchmarkWorker(QThread):
             "date": self.hardware_info['date_utc'],
             "system": self.hardware_info,
             "judge_model": JUDGE_MODEL,
-            "benchmark_version": "v1",
-            "json_format_version": "v1",
+            "benchmark_version": "v2",
+            "json_format_version": "v2",
             "benchmarks": [],
             "total_score": 0
         }
@@ -114,92 +114,73 @@ class BenchmarkWorker(QThread):
             full_results['model_estimated_vram_usage_mb'] = avg_vram
             self.benchmark_finished.emit("A", res_a)
 
-        # 2. Phase: Generation (B-J)
-        pending_benchmarks = ["B", "C", "D", "E", "F", "G", "H", "I", "J"]
+        # 2. Phase: Generation (B-X)
+        pending_benchmarks = ["B", "C", "D", "E", "F", "G", "H", "I", "J", "W", "X"]
         generated_responses = {}
         
-        self.verbose_log.emit("\n--- STARTE PHASE 2: GENERIERUNG (B-J) ---")
+        self.verbose_log.emit("\n--- STARTE PHASE 2: GENERIERUNG (B-X) ---")
         
         for b_id in pending_benchmarks:
             if not self.running: break
             self.progress_update.emit(b_id, "Generiere Antwort...")
             
-            bench_def = self.runner.get_benchmark_def(b_id)
-            self.verbose_log.emit(f"\n[Bench {b_id}] Prompt:\n{bench_def.get('prompt', '')}")
-            self.verbose_log.emit(f"[Bench {b_id}] Antwort:\n")
+            # Retrieve category definition clearly (v2 fix)
+            bench_def = self.runner.get_category_def(b_id)
+            # prompt isn't directly in category_def in v2, it manages sub-tasks
+            # For logging, we'll just say we are starting the category
+            self.verbose_log.emit(f"\n[Bench {b_id}] Starte Kategorie: {bench_def.get('name', b_id)}")
             
             # Record VRAM for each generation
             monitor = HardwareMonitor()
             monitor.start()
             
-            stream_gen, error = self.runner.generate_response(b_id, self.test_model, options=runner_options, stream=True)
+            # In benchmarks v2, run_benchmark/run_category handles generation internally for sub-tasks
+            # So we don't stream here easily without refactoring benchmarks.py to stream 3 tasks
+            # Revert to calling run_benchmark directly which returns the full result with avg score
+            # BUT wait, the previous code streamed chunks.
+            # benchmarks v2 `run_benchmark` calls `_run_content_task` or `_run_category`.
+            # `_run_category` runs 3 tasks sequentially.
+            # We lose streaming if we just call `run_benchmark(category)`.
+            # However, adapting to v2 FULLY means using `run_benchmark` which orchestrates the 3 tasks.
+            # To keep it simple and working: we call `run_benchmark` directly.
+            # We lose "live streaming" of text unless we pass a callback, but benchmarks.py progress_callback only takes strings.
             
-            full_response = ""
-            if error:
-                self.verbose_log.emit(f"\n[Bench {b_id}] Fehler: {error}")
-                generated_responses[b_id] = {"error": error}
-            else:
-                try:
-                    for chunk in stream_gen:
-                        if not self.running: break
-                        if "error" in chunk:
-                            error = chunk["error"]
-                            break
-                        
-                        text = chunk.get("response", "")
-                        full_response += text
-                        self.stream_chunk.emit(text)
-                        
-                        if chunk.get("done"):
-                            break
-                except Exception as e:
-                    error = str(e)
-                
-                monitor.stop()
-                
-                if error:
-                    self.verbose_log.emit(f"\n[Bench {b_id}] Fehler beim Streamen: {error}")
-                    generated_responses[b_id] = {"error": error}
-                else:
-                    self.verbose_log.emit("\n[Bench " + b_id + "] Generierung abgeschlossen.")
-                    generated_responses[b_id] = {
-                        "response": full_response,
-                        "metrics": {
-                            "peak_vram_mb": monitor.peak_vram,
-                            "avg_vram_mb": round(sum(monitor.samples)/len(monitor.samples), 2) if monitor.samples else 0,
-                            "gpu_detected": monitor.peak_vram > 500
-                        }
-                    }
-        # 3. Phase: Judging (B-F)
-        self.verbose_log.emit("\n--- STARTE PHASE 3: BEWERTUNG (JUDGE) ---")
-        
-        total_score = 0
-        for b_id in pending_benchmarks:
-            if not self.running: break
-            self.progress_update.emit(b_id, "Warte auf Judge Bewertung...")
+            # Let's use the runner to do the work.
             
-            data = generated_responses.get(b_id)
-            if not data or "error" in data:
-                res = {"score": 0, "comment": f"Generation Error: {data.get('error', 'Unknown')}", "issues": [], "metrics": {}}
-                self.verbose_log.emit(f"[Bench {b_id}] Überspringe Judge wegen Vorfehler.")
+            res = self.runner.run_benchmark(b_id, self.test_model, options=runner_options, progress_callback=lambda m: self.progress_update.emit(b_id, m))
+            
+            monitor.stop()
+            
+            # Logic for result handling
+            if "error" in res:
+                 self.verbose_log.emit(f"\n[Bench {b_id}] Fehler: {res.get('error')}")
             else:
-                self.verbose_log.emit(f"[Bench {b_id}] Judge bewertet...")
-                res = self.runner.judge_response(b_id, data["response"])
-                self.verbose_log.emit(f"[Bench {b_id}] Judge Ergebnis:\n{json.dumps(res, indent=2, ensure_ascii=False)}")
-                res["metrics"] = data["metrics"] # Carry over generation metrics
+                 self.verbose_log.emit(f"\n[Bench {b_id}] Abgeschlossen. Score: {res.get('score')}")
 
-            if "id" not in res:
-                res["id"] = b_id
+            # Add metrics placeholders if missing (since run_benchmark might not set them all same way)
+            if "metrics" not in res:
+                res["metrics"] = {
+                    "peak_vram_mb": monitor.peak_vram,
+                    "avg_vram_mb": round(sum(monitor.samples)/len(monitor.samples), 2) if monitor.samples else 0,
+                    "gpu_detected": monitor.peak_vram > 500
+                }
+
+            # Ensure Name is correct for JSON
             if "name" not in res or res["name"] == b_id:
-                bench_def = self.runner.get_benchmark_def(b_id)
                 res["name"] = bench_def.get("name", b_id)
-            
+                
             full_results['benchmarks'].append(res)
             self.benchmark_finished.emit(b_id, res)
-            total_score += res.get('score', 0)
+            
+            # Accumulate total score (run_category already computes avg for the category)
+            # we do this at the end
 
         self.verbose_log.emit("\n--- ALLE BENCHMARKS ABGESCHLOSSEN ---")
+        
+        # Calculate total score based on what we have in full_results
+        total_score = sum(b.get('score', 0) for b in full_results['benchmarks'] if b.get('id') not in ["A"])
         full_results['total_score'] = total_score
+        
         self.all_finished.emit(full_results)
 
 class PullWorker(QThread):
