@@ -177,6 +177,7 @@ class BenchmarkRunner:
         
         category_def = self.get_category_def(category_id)
         return {
+            "id": category_id,
             "category_id": category_id,
             "name": category_def.get("name", category_id),
             "description": category_def.get("description", ""),

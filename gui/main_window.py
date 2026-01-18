@@ -583,8 +583,9 @@ class MainWindow(QMainWindow):
         self.current_task_lbl.setText("Benchmark Completed")
         self.log("All tasks finished successfully.")
         
-        quality_score = sum(b['score'] for b in results['benchmarks'] if b.get('id') in list("BCDEFGHIJWX"))
-        self.total_score_lbl.setText(f"Total Quality Score: {quality_score}/110")
+        # Calculate sum of categories B through X
+        quality_score = sum(b.get('score', 0) for b in results['benchmarks'] if b.get('id') in list("BCDEFGHIJWX") or b.get('category_id') in list("BCDEFGHIJWX"))
+        self.total_score_lbl.setText(f"Total Quality Score: {round(quality_score, 2)}/110")
         
         if not os.path.exists("results"):
             os.makedirs("results")
