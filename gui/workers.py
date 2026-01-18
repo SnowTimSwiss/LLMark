@@ -58,11 +58,21 @@ class BenchmarkWorker(QThread):
 
         # Fetch Model Info (Quantization, Context etc)
         model_info = self.client.show_model_info(self.test_model)
+        
+        details = model_info.get("details", {})
+        if not isinstance(details, dict): details = {}
+        
+        m_info = model_info.get("model_info", {})
+        if not isinstance(m_info, dict): m_info = {}
+        
+        params = model_info.get("parameters", {})
+        if not isinstance(params, dict): params = {}
+
         full_results["model_details"] = {
-            "quantization": model_info.get("details", {}).get("quantization_level"),
-            "context_length": model_info.get("model_info", {}).get("llama.context_length") or model_info.get("parameters", {}).get("num_ctx"),
-            "parameter_size": model_info.get("details", {}).get("parameter_size"),
-            "family": model_info.get("details", {}).get("family")
+            "quantization": details.get("quantization_level"),
+            "context_length": m_info.get("llama.context_length") or params.get("num_ctx"),
+            "parameter_size": details.get("parameter_size"),
+            "family": details.get("family")
         }
 
         # 1. Benchmark A: Speed (Remains separate as it measures performance)
