@@ -81,8 +81,9 @@ class BenchmarkWorker(QThread):
                 self.verbose_log.emit(f"Antwort erhalten ({res_a.get('comment', '')})")
             
             avg_vram = round(sum(monitor.samples)/len(monitor.samples), 2) if monitor.samples else 0
-            res_a['metrics'] = {"peak_vram_mb": monitor.peak_vram, "avg_vram_mb": avg_vram, "gpu_detected": monitor.peak_vram > 500}
-            res_a['name'] = "A"
+            if "error" not in res_a:
+                res_a['id'] = "A"
+                res_a['name'] = "Velocity/Speed"
             full_results['benchmarks'].append(res_a)
             full_results['model_estimated_vram_usage_mb'] = avg_vram
             self.benchmark_finished.emit("A", res_a)
@@ -161,7 +162,12 @@ class BenchmarkWorker(QThread):
                 self.verbose_log.emit(f"[Bench {b_id}] Judge Ergebnis:\n{json.dumps(res, indent=2, ensure_ascii=False)}")
                 res["metrics"] = data["metrics"] # Carry over generation metrics
 
-            res["name"] = b_id
+            if "id" not in res:
+                res["id"] = b_id
+            if "name" not in res or res["name"] == b_id:
+                bench_def = self.runner.get_benchmark_def(b_id)
+                res["name"] = bench_def.get("name", b_id)
+            
             full_results['benchmarks'].append(res)
             self.benchmark_finished.emit(b_id, res)
             total_score += res.get('score', 0)

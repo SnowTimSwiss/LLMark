@@ -577,7 +577,7 @@ class MainWindow(QMainWindow):
         self.current_task_lbl.setText("Benchmark Completed")
         self.log("All tasks finished successfully.")
         
-        quality_score = sum(b['score'] for b in results['benchmarks'] if b['name'] in list("BCDEFGHIJ"))
+        quality_score = sum(b['score'] for b in results['benchmarks'] if b.get('id') in list("BCDEFGHIJ"))
         self.total_score_lbl.setText(f"Total Quality Score: {quality_score}/90")
         
         if not os.path.exists("results"):

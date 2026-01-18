@@ -52,6 +52,7 @@ class BenchmarkRunner:
         tps = (eval_count / eval_duration_ns) * 1_000_000_000 if eval_duration_ns else eval_count / elapsed
 
         return {
+            "id": "A",
             "name": "Velocity/Speed",
             "description": "Velocity/Speed",
             "score": round(tps, 2), # TPS is the "score" now
@@ -101,6 +102,7 @@ class BenchmarkRunner:
 
         bench_def = self.get_benchmark_def(bench_id)
         return {
+            "id": bench_id,
             "name": bench_def.get("name", bench_id),
             "description": bench_def.get("name", bench_id),
             "score": min(10, max(0, score)),
