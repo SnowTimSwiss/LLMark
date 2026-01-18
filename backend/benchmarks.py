@@ -52,7 +52,7 @@ class BenchmarkRunner:
         tps = (eval_count / eval_duration_ns) * 1_000_000_000 if eval_duration_ns else eval_count / elapsed
 
         return {
-            "name": "A",
+            "name": "Velocity/Speed",
             "description": "Velocity/Speed",
             "score": round(tps, 2), # TPS is the "score" now
             "comment": f"{round(tps,2)} tokens/sec",
@@ -85,9 +85,11 @@ class BenchmarkRunner:
         if progress_callback:
             progress_callback(f"Generating response for benchmark {bench_id}...")
 
-        text, error = self.generate_response(bench_id, test_model)
+        res, error = self.generate_response(bench_id, test_model)
         if error:
             return {"name": bench_id, "score": 0, "comment": f"Generation error: {error}", "issues": [error]}
+
+        text = res.get("response") if isinstance(res, dict) else res
 
         if progress_callback:
             progress_callback(f"Judging benchmark {bench_id}...")
@@ -97,8 +99,9 @@ class BenchmarkRunner:
         # Score bereits 1-10 vom Judge
         score = judge_result.get("score", 0)
 
+        bench_def = self.get_benchmark_def(bench_id)
         return {
-            "name": bench_id,
+            "name": bench_def.get("name", bench_id),
             "description": bench_def.get("name", bench_id),
             "score": min(10, max(0, score)),
             "comment": judge_result.get("comment", f"Score: {score}/10"),
