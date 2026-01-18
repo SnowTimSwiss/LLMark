@@ -130,8 +130,12 @@ class BenchmarkRunner:
             
             result = self._run_content_task(category_id, task_id[1], test_model, options, None)
             results.append(result)
-            total_score += result.get("score", 0)
-        
+            
+        return self.compile_category_result(category_id, results)
+
+    def compile_category_result(self, category_id, results):
+        """Erstellt das Kategorie-Ergebnis aus den Einzel-Ergebnissen"""
+        total_score = sum(r.get("score", 0) for r in results)
         avg_score = round(total_score / len(results), 2) if results else 0
         
         # Summary Generation

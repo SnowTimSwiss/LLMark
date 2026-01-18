@@ -114,71 +114,125 @@ class BenchmarkWorker(QThread):
             full_results['model_estimated_vram_usage_mb'] = avg_vram
             self.benchmark_finished.emit("A", res_a)
 
-        # 2. Phase: Generation (B-X)
-        pending_benchmarks = ["B", "C", "D", "E", "F", "G", "H", "I", "J", "W", "X"]
-        generated_responses = {}
+        # 2. Phase: Generation (B-X) - Batch Execution
+        categories = ["B", "C", "D", "E", "F", "G", "H", "I", "J", "W", "X"]
         
-        self.verbose_log.emit("\n--- STARTE PHASE 2: GENERIERUNG (B-X) ---")
+        # Flat list of all subtasks to run
+        all_subtasks = []
+        for cat_id in categories:
+            for i in range(1, 4):
+                all_subtasks.append(f"{cat_id}{i}")
+                
+        generated_responses = {} # Key: subtask_id (e.g. "B1")
         
-        for b_id in pending_benchmarks:
+        self.verbose_log.emit(f"\n--- STARTE PHASE 2: BATCH GENERIERUNG ({len(all_subtasks)} Tasks) ---")
+        
+        for task_id in all_subtasks:
             if not self.running: break
-            self.progress_update.emit(b_id, "Generiere Antwort...")
+            self.progress_update.emit(task_id, "Generiere Antwort...")
             
-            # Retrieve category definition clearly (v2 fix)
-            bench_def = self.runner.get_category_def(b_id)
-            # prompt isn't directly in category_def in v2, it manages sub-tasks
-            # For logging, we'll just say we are starting the category
-            self.verbose_log.emit(f"\n[Bench {b_id}] Starte Kategorie: {bench_def.get('name', b_id)}")
+            # Use get_task_def to find prompt
+            cat_id = task_id[0]
+            t_id = task_id[1]
+            task_def = self.runner.get_task_def(cat_id, t_id)
+            
+            self.verbose_log.emit(f"\n[Task {task_id}] Prompt: {task_def.get('task_desc', '')}")
             
             # Record VRAM for each generation
             monitor = HardwareMonitor()
             monitor.start()
             
-            # In benchmarks v2, run_benchmark/run_category handles generation internally for sub-tasks
-            # So we don't stream here easily without refactoring benchmarks.py to stream 3 tasks
-            # Revert to calling run_benchmark directly which returns the full result with avg score
-            # BUT wait, the previous code streamed chunks.
-            # benchmarks v2 `run_benchmark` calls `_run_content_task` or `_run_category`.
-            # `_run_category` runs 3 tasks sequentially.
-            # We lose streaming if we just call `run_benchmark(category)`.
-            # However, adapting to v2 FULLY means using `run_benchmark` which orchestrates the 3 tasks.
-            # To keep it simple and working: we call `run_benchmark` directly.
-            # We lose "live streaming" of text unless we pass a callback, but benchmarks.py progress_callback only takes strings.
+            stream_gen, error = self.runner.generate_response(task_id, self.test_model, options=runner_options, stream=True)
             
-            # Let's use the runner to do the work.
-            
-            res = self.runner.run_benchmark(b_id, self.test_model, options=runner_options, progress_callback=lambda m: self.progress_update.emit(b_id, m))
-            
-            monitor.stop()
-            
-            # Logic for result handling
-            if "error" in res:
-                 self.verbose_log.emit(f"\n[Bench {b_id}] Fehler: {res.get('error')}")
+            full_response = ""
+            if error:
+                self.verbose_log.emit(f"\n[Task {task_id}] Fehler: {error}")
+                generated_responses[task_id] = {"error": error}
             else:
-                 self.verbose_log.emit(f"\n[Bench {b_id}] Abgeschlossen. Score: {res.get('score')}")
-
-            # Add metrics placeholders if missing (since run_benchmark might not set them all same way)
-            if "metrics" not in res:
-                res["metrics"] = {
-                    "peak_vram_mb": monitor.peak_vram,
-                    "avg_vram_mb": round(sum(monitor.samples)/len(monitor.samples), 2) if monitor.samples else 0,
-                    "gpu_detected": monitor.peak_vram > 500
-                }
-
-            # Ensure Name is correct for JSON
-            if "name" not in res or res["name"] == b_id:
-                res["name"] = bench_def.get("name", b_id)
+                try:
+                    for chunk in stream_gen:
+                        if not self.running: break
+                        if "error" in chunk:
+                            error = chunk["error"]
+                            break
+                        
+                        text = chunk.get("response", "")
+                        full_response += text
+                        self.stream_chunk.emit(text)
+                        
+                        if chunk.get("done"):
+                            break
+                except Exception as e:
+                    error = str(e)
                 
-            full_results['benchmarks'].append(res)
-            self.benchmark_finished.emit(b_id, res)
+                monitor.stop()
+                
+                if error:
+                    self.verbose_log.emit(f"\n[Task {task_id}] Fehler beim Streamen: {error}")
+                    generated_responses[task_id] = {"error": error}
+                else:
+                    self.verbose_log.emit(f"\n[Task {task_id}] Fertig.")
+                    generated_responses[task_id] = {
+                        "response": full_response,
+                        "metrics": {
+                            "peak_vram_mb": monitor.peak_vram,
+                            "avg_vram_mb": round(sum(monitor.samples)/len(monitor.samples), 2) if monitor.samples else 0,
+                            "gpu_detected": monitor.peak_vram > 500
+                        }
+                    }
+
+        # 3. Phase: Judging (Batch)
+        self.verbose_log.emit("\n--- STARTE PHASE 3: BATCH BEWERTUNG ---")
+        
+        # We process by category to emit results as whole blocks
+        judged_subtasks = {} # Key: subtask_id -> Result Dict
+        
+        for task_id in all_subtasks:
+            if not self.running: break
+            self.progress_update.emit(task_id, "Judge bewertet...")
             
-            # Accumulate total score (run_category already computes avg for the category)
-            # we do this at the end
+            data = generated_responses.get(task_id)
+            if not data or "error" in data:
+                res = {"id": task_id, "score": 0, "comment": f"Gen Error: {data.get('error', '?')}", "issues": []}
+            else:
+                self.verbose_log.emit(f"[Task {task_id}] Bewerytung läuft...")
+                res = self.runner.judge_response(task_id, data["response"])
+                res["metrics"] = data["metrics"]
+            
+            # Add ID/Name if missing
+            res["id"] = task_id
+            cat_id = task_id[0]
+            t_id = task_id[1]
+            task_def = self.runner.get_task_def(cat_id, t_id)
+            res["name"] = task_def.get("name", task_id)
+            
+            judged_subtasks[task_id] = res
+
+        # 4. Aggregation & Emission
+        self.verbose_log.emit("\n--- AGGREGATION ---")
+        
+        total_score = 0
+        for cat_id in categories:
+             if not self.running: break
+             
+             # Collect 3 subtasks
+             cat_results = []
+             for i in range(1, 4):
+                 tid = f"{cat_id}{i}"
+                 if tid in judged_subtasks:
+                     cat_results.append(judged_subtasks[tid])
+            
+             # Compile Result
+             final_res = self.runner.compile_category_result(cat_id, cat_results)
+             
+             # Emit to UI
+             full_results['benchmarks'].append(final_res)
+             self.benchmark_finished.emit(cat_id, final_res)
+             
+             total_score += final_res.get('score', 0)
 
         self.verbose_log.emit("\n--- ALLE BENCHMARKS ABGESCHLOSSEN ---")
         
-        # Calculate total score based on what we have in full_results
-        total_score = sum(b.get('score', 0) for b in full_results['benchmarks'] if b.get('id') not in ["A"])
         full_results['total_score'] = total_score
         
         self.all_finished.emit(full_results)
