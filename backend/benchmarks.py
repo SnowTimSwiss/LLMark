@@ -134,13 +134,42 @@ class BenchmarkRunner:
         
         avg_score = round(total_score / len(results), 2) if results else 0
         
-        category_def = self.get_category_def(category_id)
-        return {
-            "category_id": category_id,
-            "name": category_def.get("name", category_id),
-            "description": category_def.get("description", ""),
-            "score": avg_score,
-            "comment": f"Average score from {len(results)} tasks: {avg_score}/10",
+        # Summary Generation
+        summary = []
+        
+        # 1. Overall Impression
+        if avg_score >= 9.0:
+            summary.append("Excellent performance.")
+        elif avg_score >= 7.5:
+            summary.append("Good performance.")
+        elif avg_score >= 5.0:
+            summary.append("Mixed results.")
+        else:
+            summary.append("Poor performance.")
+            
+        # 2. Issues (from lowest scoring task)
+        sorted_by_score = sorted(results, key=lambda r: r.get("score", 0))
+        worst = sorted_by_score[0] if sorted_by_score else None
+        
+        if worst and worst.get("score", 0) < 9:
+            issues = worst.get("issues", [])
+            if issues:
+                # Take first issue, truncate if too long
+                issue_text = issues[0]
+                if len(issue_text) > 40: issue_text = issue_text[:37] + "..."
+                summary.append(f"Issue ({worst['id']}): {issue_text}")
+            elif worst.get("comment"):
+                 # Fallback to judge comment if no issues list
+                 comm = worst.get("comment")
+                 if len(comm) > 40: comm = comm[:37] + "..."
+                 summary.append(f"Note ({worst['id']}): {comm}")
+        
+        # 3. Strength (if distinct)
+        best = sorted_by_score[-1] if sorted_by_score else None
+        if best and best.get("score", 0) >= 9 and best != worst:
+            summary.append(f"Strong: {best['name']}")
+            
+        final_comment = " ".join(summary)
             "tasks": results,
             "details": {
                 "task_count": len(results),
