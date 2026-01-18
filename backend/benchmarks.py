@@ -229,11 +229,6 @@ class BenchmarkRunner:
             "score": round(tps, 2), # TPS is the "score" now
             "comment": f"{round(tps,2)} tokens/sec",
             "details": {"tokens": int(eval_count), "total_time_s": round(elapsed, 3), "tokens_per_sec": round(tps, 2)},
-            "metrics": {
-                "avg_vram_mb": res.get("avg_vram_mb"),
-                "peak_vram_mb": res.get("peak_vram_mb"),
-                "gpu_detected": res.get("gpu_detected")
-            },
             "raw_response_preview": (res.get("response") or "")[:200]
         }
 

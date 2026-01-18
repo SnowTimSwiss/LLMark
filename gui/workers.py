@@ -107,9 +107,17 @@ class BenchmarkWorker(QThread):
                 self.verbose_log.emit(f"Antwort erhalten ({res_a.get('comment', '')})")
             
             avg_vram = round(sum(monitor.samples)/len(monitor.samples), 2) if monitor.samples else 0
+            
+            # Add VRAM metrics to result
             if "error" not in res_a:
                 res_a['id'] = "A"
                 res_a['name'] = "Velocity/Speed"
+                res_a['metrics'] = {
+                    "peak_vram_mb": monitor.peak_vram,
+                    "avg_vram_mb": avg_vram,
+                    "gpu_detected": monitor.peak_vram > 500
+                }
+            
             full_results['benchmarks'].append(res_a)
             full_results['model_estimated_vram_usage_mb'] = avg_vram
             self.benchmark_finished.emit("A", res_a)
@@ -138,7 +146,7 @@ class BenchmarkWorker(QThread):
             
             self.verbose_log.emit(f"\n[Task {task_id}] Prompt: {task_def.get('task_desc', '')}")
             
-            # Record VRAM for each generation
+            # Record VRAM for each generation (only for the test model, NOT the judge)
             monitor = HardwareMonitor()
             monitor.start()
             
@@ -165,8 +173,6 @@ class BenchmarkWorker(QThread):
                 except Exception as e:
                     error = str(e)
                 
-                monitor.stop()
-                
                 if error:
                     self.verbose_log.emit(f"\n[Task {task_id}] Fehler beim Streamen: {error}")
                     generated_responses[task_id] = {"error": error}
@@ -180,6 +186,10 @@ class BenchmarkWorker(QThread):
                             "gpu_detected": monitor.peak_vram > 500
                         }
                     }
+            
+            # IMPORTANT: Stop monitor BEFORE judging to avoid measuring the judge model's VRAM
+            monitor.stop()
+
 
         # 3. Phase: Judging (Batch)
         self.verbose_log.emit("\n--- STARTE PHASE 3: BATCH BEWERTUNG ---")
