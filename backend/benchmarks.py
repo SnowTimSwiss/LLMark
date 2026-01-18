@@ -170,6 +170,14 @@ class BenchmarkRunner:
             summary.append(f"Strong: {best['name']}")
             
         final_comment = " ".join(summary)
+        
+        category_def = self.get_category_def(category_id)
+        return {
+            "category_id": category_id,
+            "name": category_def.get("name", category_id),
+            "description": category_def.get("description", ""),
+            "score": avg_score,
+            "comment": final_comment,
             "tasks": results,
             "details": {
                 "task_count": len(results),
