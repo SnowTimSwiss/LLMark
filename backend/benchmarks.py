@@ -53,6 +53,7 @@ class BenchmarkRunner:
 
         return {
             "name": "A",
+            "description": "Velocity/Speed",
             "score": round(tps, 2), # TPS is the "score" now
             "comment": f"{round(tps,2)} tokens/sec",
             "details": {"tokens": int(eval_count), "total_time_s": round(elapsed, 3), "tokens_per_sec": round(tps, 2)},
@@ -98,6 +99,7 @@ class BenchmarkRunner:
 
         return {
             "name": bench_id,
+            "description": bench_def.get("name", bench_id),
             "score": min(10, max(0, score)),
             "comment": judge_result.get("comment", f"Score: {score}/10"),
             "issues": judge_result.get("issues", []),
@@ -185,6 +187,7 @@ Evaluation Criteria:
     def get_benchmark_def(self, bench_id):
         defs = {
             "B": {
+                "name": "English Quality",
                 "prompt": (
                     "Write a formal business email reminding a customer of an overdue invoice.\n\n"
                     "Facts (10 minimum):\n"
@@ -223,6 +226,7 @@ Evaluation Criteria:
             },
 
             "C": {
+                "name": "German Quality",
                 "prompt": (
                     "Verfassen Sie eine formelle Zahlungserinnerung auf Deutsch.\n\n"
                     "Facts (10+):\n"
@@ -261,6 +265,7 @@ Evaluation Criteria:
             },
 
             "D": {
+                "name": "Fact Checking",
                 "prompt": (
                     "Evaluate each statement as CORRECT or FALSE and justify briefly:\n\n"
                     "Facts (10 minimum):\n"
@@ -287,6 +292,7 @@ Evaluation Criteria:
             },
 
             "E": {
+                "name": "Context Extraction",
                 "prompt": (
                     "Meeting Transcript:\n"
                     "Alex: Project X finished by Friday.\n"
@@ -315,6 +321,7 @@ Evaluation Criteria:
             },
 
             "F": {
+                "name": "Logic/Timetable",
                 "prompt": (
                     "Create a complete timetable for two classes 1A, 2B.\n\n"
                     "Teachers:\n"
@@ -342,6 +349,7 @@ Evaluation Criteria:
             },
 
             "G": {
+                "name": "Creative Writing",
                 "prompt": (
                     "Write the beginning of a story (approx. 200-300 words).\n"
                     "Genre: Cyberpunk-Noir.\n"
@@ -368,6 +376,7 @@ Evaluation Criteria:
             },
 
             "H": {
+                "name": "ELI5 Complexity",
                 "prompt": (
                     "Explain the scientific concept of 'Quantum Entanglement' to an 8-year-old child.\n\n"
                     "Requirements:\n"
@@ -392,6 +401,7 @@ Evaluation Criteria:
             },
 
             "I": {
+                "name": "Python Coding",
                 "prompt": (
                     "Write a Python function named 'is_valid_password(pw)' that checks a password.\n"
                     "Criteria for 'True':\n"
@@ -417,6 +427,7 @@ Evaluation Criteria:
             },
 
             "J": {
+                "name": "Customer Support",
                 "prompt": (
                     "Situation: You are in the customer support of an airline.\n"
                     "Customer: 'My suitcase was lost! I'm in Paris and have a wedding tomorrow morning, "

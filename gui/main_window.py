@@ -531,7 +531,13 @@ class MainWindow(QMainWindow):
             "J": "J: Customer Support"
         }
         
-        name = name_map.get(bench_id, bench_id)
+        # Use description from result if available, otherwise fallback to name_map
+        desc = result.get('description')
+        if desc:
+            name = f"{bench_id}: {desc}"
+        else:
+            name = name_map.get(bench_id, bench_id)
+            
         comment = result.get('comment', '')
         
         if bench_id == "A":

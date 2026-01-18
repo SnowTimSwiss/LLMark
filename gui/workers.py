@@ -50,6 +50,8 @@ class BenchmarkWorker(QThread):
             "date": self.hardware_info['date_utc'],
             "system": self.hardware_info,
             "judge_model": JUDGE_MODEL,
+            "benchmark_version": "v1",
+            "json_format_version": "v1",
             "benchmarks": [],
             "total_score": 0
         }
