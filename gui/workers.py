@@ -277,7 +277,155 @@ class PullWorker(QThread):
             if success:
                 self.finished.emit(True, "Installation complet.")
             else:
-                # Callback usually emits error, but safeguard
                 self.finished.emit(False, "Unknown error during pull")
         except Exception as e:
             self.finished.emit(False, str(e))
+
+class ContinuousTestWorker(QThread):
+    status_update = Signal(str)
+    progress_update = Signal(str, int) # task, percent
+    log_update = Signal(str)
+    error_occurred = Signal(str)
+    all_finished = Signal()
+
+    def __init__(self, token, models, hardware_info, context_window=None):
+        super().__init__()
+        self.token = token
+        self.models = models
+        self.hardware_info = hardware_info
+        self.context_window = context_window
+        self.client = OllamaClient()
+        self.running = True
+
+    def run(self):
+        from backend.benchmarks import BenchmarkRunner, JUDGE_MODEL
+        from backend.contribution import ContributionManager
+        
+        runner = BenchmarkRunner(self.client)
+        contrib = ContributionManager()
+
+        # 1. Ensure Judge is present
+        if not self.client.check_model_availability(JUDGE_MODEL):
+            self.status_update.emit(f"Pulling Judge: {JUDGE_MODEL}")
+            self.log_update.emit(f"Pulling Judge: {JUDGE_MODEL}...")
+            
+            def pull_cb(data):
+                if "total" in data and data["total"] > 0:
+                    percent = int((data["completed"] / data["total"]) * 100)
+                    self.progress_update.emit(f"Pulling Judge", percent)
+            
+            success = self.client.pull_model(JUDGE_MODEL, progress_callback=pull_cb)
+            if not success:
+                self.error_occurred.emit(f"Could not pull judge model {JUDGE_MODEL}")
+                return
+
+        # 2. Infinite Loop through models
+        while self.running:
+            for model in self.models:
+                if not self.running:
+                    break
+
+            self.status_update.emit(f"Current Model: {model}")
+            self.log_update.emit(f"\n--- Starting automated test for {model} ---")
+
+            # A. Pull Model
+            if not self.client.check_model_availability(model):
+                self.log_update.emit(f"Pulling {model}...")
+                
+                def model_pull_cb(data):
+                    if "total" in data and data["total"] > 0:
+                        percent = int((data["completed"] / data["total"]) * 100)
+                        self.progress_update.emit(f"Pulling {model}", percent)
+                
+                success = self.client.pull_model(model, progress_callback=model_pull_cb)
+                if not success:
+                    self.log_update.emit(f"Failed to pull {model}, skipping...")
+                    continue
+
+            # B. Run Benchmark
+            self.log_update.emit(f"Running benchmark for {model}...")
+            
+            # Refresh hardware info for correct timestamp
+            from backend.hardware import get_hardware_info
+            current_hw = get_hardware_info()
+            
+            full_results = {
+                "model": model,
+                "date": current_hw['date_utc'],
+                "system": current_hw,
+                "judge_model": JUDGE_MODEL,
+                "benchmark_version": "v2",
+                "json_format_version": "v2",
+                "benchmarks": [],
+                "total_score": 0
+            }
+
+            model_info = self.client.show_model_info(model)
+            details = model_info.get("details", {})
+            m_info = model_info.get("model_info", {})
+            
+            full_results["model_details"] = {
+                "quantization": details.get("quantization_level"),
+                "context_length": self.context_window or m_info.get("llama.context_length"),
+                "parameter_size": details.get("parameter_size"),
+                "family": details.get("family")
+            }
+
+            runner_options = {}
+            if self.context_window:
+                runner_options["num_ctx"] = int(self.context_window)
+
+            # Benchmark A
+            res_a = runner.run_benchmark("A", model, options=runner_options)
+            res_a['id'] = "A"
+            res_a['name'] = "Velocity/Speed"
+            full_results['benchmarks'].append(res_a)
+
+            # Benchmarks B-X
+            categories = ["B", "C", "D", "E", "F", "G", "H", "I", "J", "W", "X"]
+            all_subtasks = [f"{c}{i}" for c in categories for i in range(1,4)]
+            
+            gen_responses = {}
+            for tid in all_subtasks:
+                if not self.running: break
+                self.progress_update.emit(f"Gen {tid}", 0)
+                resp, err = runner.generate_response(tid, model, options=runner_options)
+                gen_responses[tid] = {"response": resp, "error": err}
+
+            if not self.running: break
+
+            total_score = 0
+            for cat_id in categories:
+                cat_results = []
+                for i in range(1, 4):
+                    tid = f"{cat_id}{i}"
+                    data = gen_responses.get(tid, {})
+                    if data.get("error"):
+                        res = {"id": tid, "score": 0, "comment": f"Error: {data['error']}"}
+                    else:
+                        res = runner.judge_response(tid, data["response"])
+                    
+                    res["id"] = tid
+                    td = runner.get_task_def(cat_id, str(i))
+                    res["name"] = td.get("name", tid)
+                    cat_results.append(res)
+                
+                final_res = runner.compile_category_result(cat_id, cat_results)
+                full_results['benchmarks'].append(final_res)
+                total_score += final_res.get('score', 0)
+
+            full_results['total_score'] = total_score
+
+            # C. Upload
+            self.log_update.emit(f"Uploading results for {model}...")
+            try:
+                pr_url = contrib.upload_authenticated(self.token, full_results)
+                self.log_update.emit(f"Successfully uploaded! PR: {pr_url}")
+            except Exception as e:
+                self.log_update.emit(f"Upload failed: {e}")
+
+        self.log_update.emit("\nAll automated tests completed.")
+        self.all_finished.emit()
+
+    def stop(self):
+        self.running = False

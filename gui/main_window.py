@@ -248,8 +248,133 @@ class MainWindow(QMainWindow):
         self.tab_detail_log = QWidget()
         self.setup_detail_log_tab()
         self.tabs.addTab(self.tab_detail_log, "Detail-Log")
+
+        # Tab 5: Auto-Pilot
+        self.tab_autopilot = QWidget()
+        self.setup_autopilot_tab()
+        self.tabs.addTab(self.tab_autopilot, "Auto-Pilot")
         
         layout.addWidget(main_content)
+
+    def setup_autopilot_tab(self):
+        layout = QVBoxLayout(self.tab_autopilot)
+        layout.setContentsMargins(15, 15, 15, 15)
+        
+        info_group = QGroupBox("Automatter Benchmark & Upload")
+        info_layout = QVBoxLayout()
+        info_lbl = QLabel("This mode will automatically download standard models, test them, and upload results to the LLMark repository.")
+        info_lbl.setWordWrap(True)
+        info_layout.addWidget(info_lbl)
+        
+        self.token_input = QLineEdit()
+        from backend.ollama_client import get_config
+        config = get_config()
+        self.token_input.setText(config.get("github_token", ""))
+        self.token_input.setPlaceholderText("GitHub Personal Access Token (classic with 'public_repo' scope)")
+        self.token_input.setEchoMode(QLineEdit.Password)
+        self.token_input.setStyleSheet("background-color: #3c3c3c; border: 1px solid #3e3e42; padding: 10px; color: #cccccc;")
+        info_layout.addWidget(QLabel("GitHub Token:"))
+        info_layout.addWidget(self.token_input)
+        
+        info_group.setLayout(info_layout)
+        layout.addWidget(info_group)
+        
+        # Model List Group
+        model_group = QGroupBox("Models to Test")
+        m_layout = QVBoxLayout()
+        self.autopilot_models_text = QTextEdit()
+        # Default list
+        default_models = [
+            "llama3.2:1b",
+            "llama3.2:3b",
+            "llama3.1:8b",
+            "qwen2.5:1.5b",
+            "qwen2.5:3b",
+            "qwen2.5:7b",
+            "phi3.5:latest",
+            "phi3:latest",
+            "gemma2:2b",
+            "gemma2:9b",
+            "mistral:latest"
+        ]
+        self.autopilot_models_text.setPlainText("\n".join(default_models))
+        self.autopilot_models_text.setStyleSheet("background-color: #1e1e1e; color: #ce9178; font-family: 'Consolas';")
+        self.autopilot_models_text.setMaximumHeight(150)
+        m_layout.addWidget(self.autopilot_models_text)
+        model_group.setLayout(m_layout)
+        layout.addWidget(model_group)
+        
+        # Start/Stop Button
+        self.autopilot_btn = QPushButton("🚀 Start Auto-Pilot")
+        self.autopilot_btn.setMinimumHeight(60)
+        self.autopilot_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #388a34; 
+                color: #ffffff; 
+                font-weight: 600; 
+                font-size: 16px;
+                border-radius: 6px;
+            }
+            QPushButton:hover { background-color: #2e702a; }
+        """)
+        self.autopilot_btn.clicked.connect(self.toggle_autopilot)
+        layout.addWidget(self.autopilot_btn)
+        
+        # Log & Progress
+        self.auto_status_lbl = QLabel("IDLE")
+        self.auto_status_lbl.setStyleSheet("color: #007acc; font-weight: bold; font-size: 14px;")
+        layout.addWidget(self.auto_status_lbl)
+        
+        self.auto_progress = QProgressBar()
+        layout.addWidget(self.auto_progress)
+        
+        self.auto_log = QTextEdit()
+        self.auto_log.setReadOnly(True)
+        self.auto_log.setStyleSheet("background-color: #1e1e1e; color: #9cdcfe; font-family: 'Consolas', monospace;")
+        layout.addWidget(self.auto_log)
+
+    def toggle_autopilot(self):
+        if hasattr(self, 'auto_worker') and self.auto_worker and self.auto_worker.isRunning():
+            self.auto_worker.stop()
+            self.autopilot_btn.setText("Stopping...")
+            self.autopilot_btn.setEnabled(False)
+            return
+
+        token = self.token_input.text().strip()
+        if not token:
+            QMessageBox.warning(self, "Token required", "Please enter your GitHub Token.")
+            return
+            
+        models = [m.strip() for m in self.autopilot_models_text.toPlainText().split("\n") if m.strip()]
+        if not models:
+            QMessageBox.warning(self, "Models required", "Please enter at least one model.")
+            return
+
+        from backend.ollama_client import get_config, save_config
+        config = get_config()
+        config["github_token"] = token
+        save_config(config)
+
+        self.autopilot_btn.setText("🛑 Stop Auto-Pilot")
+        self.autopilot_btn.setStyleSheet("background-color: #e51400; color: white; font-weight: bold;")
+        self.auto_log.clear()
+        self.auto_log.append("Starting Auto-Pilot mode...")
+        
+        from gui.workers import ContinuousTestWorker
+        self.auto_worker = ContinuousTestWorker(token, models, self.hardware_info)
+        self.auto_worker.status_update.connect(lambda s: self.auto_status_lbl.setText(s))
+        self.auto_worker.progress_update.connect(lambda t, p: self.auto_progress.setValue(p))
+        self.auto_worker.log_update.connect(lambda l: self.auto_log.append(l))
+        self.auto_worker.error_occurred.connect(lambda e: QMessageBox.critical(self, "Error", e))
+        self.auto_worker.finished.connect(self.on_autopilot_finished)
+        self.auto_worker.start()
+
+    def on_autopilot_finished(self):
+        self.autopilot_btn.setText("🚀 Start Auto-Pilot")
+        self.autopilot_btn.setStyleSheet("background-color: #388a34; color: white; font-weight: bold;")
+        self.autopilot_btn.setEnabled(True)
+        self.auto_status_lbl.setText("Finished.")
+        self.auto_log.append("\n--- Auto-Pilot Session Finished ---")
 
     def setup_control_tab(self):
         layout = QVBoxLayout(self.tab_control)
