@@ -309,14 +309,17 @@ class ContinuousTestWorker(QThread):
             self.status_update.emit(f"Pulling Judge: {JUDGE_MODEL}")
             self.log_update.emit(f"Pulling Judge: {JUDGE_MODEL}...")
             
+            pull_error = [None]
             def pull_cb(data):
-                if "total" in data and data["total"] > 0:
+                if "error" in data:
+                    pull_error[0] = data["error"]
+                elif "total" in data and data["total"] > 0:
                     percent = int((data["completed"] / data["total"]) * 100)
                     self.progress_update.emit(f"Pulling Judge", percent)
             
             success = self.client.pull_model(JUDGE_MODEL, progress_callback=pull_cb)
-            if not success:
-                self.error_occurred.emit(f"Could not pull judge model {JUDGE_MODEL}")
+            if not success or pull_error[0]:
+                self.error_occurred.emit(f"Could not pull judge model {JUDGE_MODEL}: {pull_error[0] or 'Unknown error'}")
                 return
 
         # 2. Run through models once
@@ -331,14 +334,17 @@ class ContinuousTestWorker(QThread):
             if not self.client.check_model_availability(model):
                 self.log_update.emit(f"Pulling {model}...")
                 
+                model_pull_error = [None]
                 def model_pull_cb(data):
-                    if "total" in data and data["total"] > 0:
+                    if "error" in data:
+                        model_pull_error[0] = data["error"]
+                    elif "total" in data and data["total"] > 0:
                         percent = int((data["completed"] / data["total"]) * 100)
                         self.progress_update.emit(f"Pulling {model}", percent)
                 
                 success = self.client.pull_model(model, progress_callback=model_pull_cb)
-                if not success:
-                    self.log_update.emit(f"Failed to pull {model}, skipping...")
+                if not success or model_pull_error[0]:
+                    self.log_update.emit(f"Failed to pull {model} ({model_pull_error[0] or 'Unknown error'}), skipping to next model...")
                     continue
 
             # B. Run Benchmark

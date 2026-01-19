@@ -392,6 +392,10 @@ class MainWindow(QMainWindow):
         self.auto_status_lbl.setText("Finished.")
         self.auto_log.append("\n--- Auto-Pilot Session Finished ---")
 
+    def start_autopilot_if_requested(self):
+        self.tabs.setCurrentWidget(self.tab_autopilot)
+        self.toggle_autopilot()
+
     def setup_control_tab(self):
         layout = QVBoxLayout(self.tab_control)
         layout.setContentsMargins(15, 15, 15, 15)

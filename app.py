@@ -105,9 +105,25 @@ def main():
     }
     """
     
+    import argparse
+    parser = argparse.ArgumentParser(description="LLMark Benchmark Suite")
+    parser.set_defaults(autopilot=False)
+    parser.add_argument("--autopilot", action="store_true", help="Start in Auto-Pilot mode")
+    parser.add_argument("--token", type=str, help="GitHub Token for Auto-Pilot")
+    args, unknown = parser.parse_known_args()
+
     app.setStyleSheet(dark_style)
     
     window = MainWindow()
+    
+    if args.autopilot:
+        if args.token:
+            window.token_input.setText(args.token)
+        # We need to wait for the window to be shown before starting the worker
+        # or use a QTimer to start it right after show
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(500, window.start_autopilot_if_requested)
+
     window.show()
     
     sys.exit(app.exec())
