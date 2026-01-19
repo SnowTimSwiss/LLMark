@@ -21,6 +21,9 @@ if "%GITHUB_TOKEN%"=="" (
     exit /b 1
 )
 
+echo.
+set /p UNINSTALL_AFTER="Sollen Ollama und alle Modelle nach Abschluss wieder deinstalliert werden? (j/n): "
+
 :: Überprüfen ob Ollama installiert ist
 where ollama >nul 2>nul
 if %ERRORLEVEL% neq 0 (
@@ -68,4 +71,33 @@ pip install -r requirements.txt
 echo Starte LLMark im Auto-Pilot Modus...
 python app.py --autopilot --token "%GITHUB_TOKEN%"
 
+if /i "%UNINSTALL_AFTER%"=="j" (
+    echo.
+    echo ========================================================
+    echo        Bereinigung (Cleanup) wird ausgefuehrt...
+    echo ========================================================
+    
+    echo Beende Ollama Prozesse...
+    taskkill /F /IM ollama.exe >nul 2>nul
+    
+    echo Deinstalliere Ollama via winget...
+    winget uninstall Ollama.Ollama
+    
+    echo Loesche Ollama Daten (Modelle) in %USERPROFILE%\.ollama ...
+    if exist "%USERPROFILE%\.ollama" (
+        rd /s /q "%USERPROFILE%\.ollama"
+    )
+    
+    echo Loesche lokales virtuelles Environment (.venv)...
+    if exist ".venv" (
+        :: Wir muessen das venv verlassen, um es zu loeschen (da wir in der shell sind)
+        :: Aber da python beendet ist, ist der Lock meist weg.
+        rd /s /q ".venv"
+    )
+    
+    echo Bereinigung abgeschlossen.
+)
+
+echo.
+echo Auto-Pilot Durchlauf beendet.
 pause
