@@ -1,4 +1,3 @@
-```python
 import json
 import os
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
