@@ -90,8 +90,14 @@ For users who want to benchmark multiple models and contribute to the community 
 1.  **Generate a GitHub Token**: Go to [GitHub Tokens](https://github.com/settings/tokens/new) and create a "Classic" token with the `public_repo` scope.
 2.  **Run the script**:
     -   **Windows**: Just double-click **`autopilot.bat`**.
-3.  **Follow the prompts**: Paste your token, choose the models, and decide if you want to keep Ollama after the test.
-
+3.  **Follow the prompts**: Paste your token and decide if you want to keep Ollama after the test.
+   
+1.  **One-klick-install**
+    ```bash
+    git clone https://github.com/SnowTimSwiss/LLMark.git
+    cd LLMark
+    ./autopilot.bat
+    ```
 ---
 
 ## 🎮 How to Use
@@ -122,3 +128,4 @@ Distributed under the GNU General Public License v3.0. See `LICENSE` for more in
 ---
 
 *Built for the local LLM community. Happy Benchmarking!* 🚀
+
