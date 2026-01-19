@@ -52,9 +52,16 @@ LLMark tests models across 10 specialized categories:
 
 ## 🚀 Installation & Setup
 
+### Automatic Setup (Windows & Linux/macOS)
+The repository includes scripts that automatically handle environment creation, dependency installation, and even checking for/installing Ollama.
+
+- **Windows**: Run `start.bat`
+- **Linux/macOS**: Run `start.sh`
+
+### Manual Setup
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/YourUsername/LLMark.git
+    git clone https://github.com/SnowTimSwiss/LLMark.git
     cd LLMark
     ```
 
@@ -67,7 +74,23 @@ LLMark tests models across 10 specialized categories:
     ```bash
     python app.py
     ```
-    *(Or use the provided `start.bat` on Windows)*
+
+---
+
+## 🤖 Auto-Pilot Mode (Easiest Way)
+
+For users who want to benchmark multiple models and contribute to the community rankings without manual effort, we provide the **Auto-Pilot Mode**.
+
+### 🌟 Features:
+-   **Automated Testing**: Downloads, runs, and evaluates a curated list of popular models (Llama, Qwen, Gemma, DeepSeek, etc.).
+-   **Direct Contribution**: Automatically uploads results to the [LLMark-Site](https://github.com/SnowTimSwiss/LLMark-Site) repository via Pull Request.
+-   **One-Click Cleanup**: Option to automatically uninstall Ollama and all downloaded models (saving GBs of space) once the run is finished.
+
+### 🏃 How to run Auto-Pilot:
+1.  **Generate a GitHub Token**: Go to [GitHub Tokens](https://github.com/settings/tokens/new) and create a "Classic" token with the `public_repo` scope.
+2.  **Run the script**:
+    -   **Windows**: Just double-click **`autopilot.bat`**.
+3.  **Follow the prompts**: Paste your token, choose the models, and decide if you want to keep Ollama after the test.
 
 ---
 
