@@ -286,14 +286,15 @@ class ContinuousTestWorker(QThread):
     progress_update = Signal(str, int) # task, percent
     log_update = Signal(str)
     error_occurred = Signal(str)
-    all_finished = Signal()
+    finished = Signal()
 
-    def __init__(self, token, models, hardware_info, context_window=None):
+    def __init__(self, token, models, hardware_info, context_window=None, autocleanup=False):
         super().__init__()
         self.token = token
         self.models = models
         self.hardware_info = hardware_info
         self.context_window = context_window
+        self.autocleanup = autocleanup
         self.client = OllamaClient()
         self.running = True
 
@@ -429,8 +430,22 @@ class ContinuousTestWorker(QThread):
             except Exception as e:
                 self.log_update.emit(f"Upload failed: {e}")
 
+            # D. Cleanup (Laufend)
+            if self.autocleanup:
+                if model != JUDGE_MODEL:
+                    self.log_update.emit(f"Autocleanup: Removing {model}...")
+                    self.client.delete_model(model)
+                else:
+                    self.log_update.emit(f"Skipping cleanup for judge model {model} during run.")
+
+        # Final Cleanup for Judge if requested
+        if self.autocleanup:
+            from backend.benchmarks import JUDGE_MODEL
+            self.log_update.emit(f"Final Cleanup: Removing {JUDGE_MODEL}...")
+            self.client.delete_model(JUDGE_MODEL)
+
         self.log_update.emit("\nAll automated tests completed.")
-        self.all_finished.emit()
+        self.finished.emit()
 
     def stop(self):
         self.running = False

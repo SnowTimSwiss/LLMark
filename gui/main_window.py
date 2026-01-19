@@ -1,10 +1,11 @@
+```python
 import json
 import os
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                                QLabel, QComboBox, QPushButton, QProgressBar, 
                                QTableWidget, QTableWidgetItem, QTextEdit, QTabWidget,
                                QHeaderView, QMessageBox, QGroupBox, QFormLayout,
-                               QDialog, QLineEdit, QDialogButtonBox)
+                               QDialog, QLineEdit, QDialogButtonBox, QCheckBox)
 from PySide6.QtCore import Qt, Slot, QTimer, QSize
 from PySide6.QtGui import QFont, QColor, QIcon, QPixmap, QPainter, QTextCursor
 
@@ -320,6 +321,16 @@ class MainWindow(QMainWindow):
         model_group.setLayout(m_layout)
         layout.addWidget(model_group)
         
+        # Options Group
+        options_group = QGroupBox("Options")
+        opt_layout = QHBoxLayout()
+        self.autocleanup_cb = QCheckBox("Auto-Cleanup models after test (saves disk space)")
+        self.autocleanup_cb.setChecked(True)
+        self.autocleanup_cb.setStyleSheet("color: #cccccc;")
+        opt_layout.addWidget(self.autocleanup_cb)
+        options_group.setLayout(opt_layout)
+        layout.addWidget(options_group)
+        
         # Start/Stop Button
         self.autopilot_btn = QPushButton("🚀 Start Auto-Pilot")
         self.autopilot_btn.setMinimumHeight(60)
@@ -376,8 +387,10 @@ class MainWindow(QMainWindow):
         self.auto_log.clear()
         self.auto_log.append("Starting Auto-Pilot mode...")
         
+        autocleanup = self.autocleanup_cb.isChecked()
+        context_window = config.get("context_window")
         from gui.workers import ContinuousTestWorker
-        self.auto_worker = ContinuousTestWorker(token, models, self.hardware_info)
+        self.auto_worker = ContinuousTestWorker(token, models, self.hardware_info, context_window=context_window, autocleanup=autocleanup)
         self.auto_worker.status_update.connect(lambda s: self.auto_status_lbl.setText(s))
         self.auto_worker.progress_update.connect(lambda t, p: self.auto_progress.setValue(p))
         self.auto_worker.log_update.connect(lambda l: self.auto_log.append(l))

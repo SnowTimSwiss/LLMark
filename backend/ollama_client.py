@@ -115,3 +115,16 @@ class OllamaClient:
             if progress_callback:
                 progress_callback({"error": str(e)})
             return False
+
+    def delete_model(self, model_name):
+        """
+        Deletes a model from Ollama.
+        """
+        url = f"{self.base_url}/delete"
+        payload = {"name": model_name}
+        try:
+            response = requests.delete(url, json=payload)
+            return response.status_code == 200
+        except Exception as e:
+            print(f"Delete error: {e}")
+            return False
