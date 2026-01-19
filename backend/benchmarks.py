@@ -326,7 +326,7 @@ class BenchmarkRunner:
             "{\n"
             "  \"score\": number (1-10, where 10 is perfect),\n"
             "  \"issues\": [...],\n"
-            "  \"comment\": \"detailed summary with score explanation\"\n"
+            "  \"comment\": \"detailed summary with score explanation and how good of a model it is for that category (max 200 chars)\"\n"
             "}\n\n"
             "Score guide:\n"
             "10: Perfect, meets all criteria\n"
