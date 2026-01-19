@@ -6,98 +6,98 @@ echo "========================================================"
 echo "       LLMark Auto-Pilot Setup & Execution"
 echo "========================================================"
 echo ""
-echo "Um den Auto-Pilot zu nutzen, benoetigst du einen GitHub Token."
-echo "Diesen kannst du hier erstellen:"
+echo "To use the Auto-Pilot, you need a GitHub Token."
+echo "You can create it here:"
 echo "https://github.com/settings/tokens/new"
 echo ""
-echo "WICHTIG: Der Token braucht das Recht 'public_repo'."
+echo "IMPORTANT: The token needs the 'public_repo' scope."
 echo ""
 
-read -p "Bitte gib dener GitHub Token ein: " GITHUB_TOKEN
+read -p "Please enter your GitHub Token: " GITHUB_TOKEN
 
 if [ -z "$GITHUB_TOKEN" ]; then
-    echo "Kein Token eingegeben. Abbruch."
+    echo "No token entered. Aborting."
     exit 1
 fi
 
 echo ""
-read -p "Sollen Ollama und alle Modelle nach Abschluss wieder deinstalliert werden? (j/n): " UNINSTALL_AFTER
+read -p "Should Ollama and all models be uninstalled after completion? (y/n): " UNINSTALL_AFTER
 
-# Überprüfen ob Ollama installiert ist
+# Check if Ollama is installed
 if ! command -v ollama &> /dev/null; then
-    echo "Ollama ist nicht installiert. Installiere Ollama..."
+    echo "Ollama is not installed. Installing Ollama..."
     curl -fsSL https://ollama.com/install.sh | sh
     if [ $? -ne 0 ]; then
-        echo "Installation fehlgeschlagen. Bitte installiere Ollama manuell von https://ollama.com"
+        echo "Installation failed. Please install Ollama manually from https://ollama.com"
         exit 1
     fi
 fi
 
-# Überprüfen ob Ollama läuft
+# Check if Ollama is running
 if ! curl -s http://localhost:11434 > /dev/null; then
-    echo "Starte Ollama Server..."
+    echo "Starting Ollama Server..."
     ollama serve > /dev/null 2>&1 &
     
-    echo "Warte auf Ollama-Server..."
+    echo "Waiting for Ollama server..."
     count=0
     until curl -s http://localhost:11434 > /dev/null; do
         sleep 2
         count=$((count + 1))
         if [ $count -ge 20 ]; then
-            echo "Ollama-Server konnte nicht gestartet werden."
+            echo "Ollama server could not be started."
             exit 1
         fi
     done
 fi
 
 if [ ! -d ".venv" ]; then
-    echo "Erstelle virtuelles Environment..."
+    echo "Creating virtual environment..."
     python3 -m venv .venv
 fi
 
-echo "Aktiviere Environment und installiere Requirements..."
+echo "Activating environment and installing requirements..."
 source .venv/bin/activate
 pip install -r requirements.txt
 
-echo "Starte LLMark im Auto-Pilot Modus..."
+echo "Starting LLMark in Auto-Pilot mode..."
 python3 app.py --autopilot --token "$GITHUB_TOKEN"
 
-if [ "$UNINSTALL_AFTER" = "j" ]; then
+if [ "$UNINSTALL_AFTER" = "y" ]; then
     echo ""
     echo "========================================================"
-    echo "       Bereinigung (Cleanup) wird ausgefuehrt..."
+    echo "       Cleanup is being performed..."
     echo "========================================================"
     
-    echo "Beende Ollama Prozesse..."
+    echo "Terminating Ollama processes..."
     pkill ollama
     
-    echo "Deinstalliere Ollama..."
-    # Auf Linux wird Ollama oft nach /usr/local/bin/ollama installiert
+    echo "Uninstalling Ollama..."
+    # On Linux, Ollama is often installed to /usr/local/bin/ollama
     if [ -f "/usr/local/bin/ollama" ]; then
         sudo rm /usr/local/bin/ollama
     fi
     
-    # Falls es als systemd service läuft (was der installer macht)
+    # If it runs as a systemd service (as the installer does)
     if systemctl is-active --quiet ollama; then
         sudo systemctl stop ollama
         sudo systemctl disable ollama
         sudo rm /etc/systemd/system/ollama.service
     fi
 
-    echo "Loesche Ollama Daten (Modelle) in ~/.ollama ..."
+    echo "Deleting Ollama data (models) in ~/.ollama ..."
     if [ -d "$HOME/.ollama" ]; then
         rm -rf "$HOME/.ollama"
     fi
     
-    echo "Loesche lokales virtuelles Environment (.venv)..."
+    echo "Deleting local virtual environment (.venv)..."
     if [ -d ".venv" ]; then
         # Deactivate first if inside venv
         deactivate 2>/dev/null || true
         rm -rf ".venv"
     fi
     
-    echo "Bereinigung abgeschlossen."
+    echo "Cleanup completed."
 fi
 
 echo ""
-echo "Auto-Pilot Durchlauf beendet."
+echo "Auto-Pilot run finished."

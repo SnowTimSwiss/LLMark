@@ -6,44 +6,44 @@ echo ========================================================
 echo        LLMark Auto-Pilot Setup ^& Execution
 echo ========================================================
 echo.
-echo Um den Auto-Pilot zu nutzen, benoetigst du einen GitHub Token.
-echo Diesen kannst du hier erstellen:
+echo To use the Auto-Pilot, you need a GitHub Token.
+echo You can create it here:
 echo https://github.com/settings/tokens/new
 echo.
-echo WICHTIG: Der Token braucht das Recht 'public_repo'.
+echo IMPORTANT: The token needs the 'public_repo' scope.
 echo.
 
-set /p GITHUB_TOKEN="Bitte gib deinen GitHub Token ein: "
+set /p GITHUB_TOKEN="Please enter your GitHub Token: "
 
 if "%GITHUB_TOKEN%"=="" (
-    echo Kein Token eingegeben. Abbruch.
+    echo No token entered. Aborting.
     pause
     exit /b 1
 )
 
 echo.
-set /p UNINSTALL_AFTER="Sollen Ollama und alle Modelle nach Abschluss wieder deinstalliert werden? (j/n): "
+set /p UNINSTALL_AFTER="Should Ollama and all models be uninstalled after completion? (y/n): "
 
 :: Überprüfen ob Ollama installiert ist
 where ollama >nul 2>nul
 if %ERRORLEVEL% neq 0 (
-    echo Ollama ist nicht installiert. Installiere Ollama via winget...
+    echo Ollama is not installed. Installing Ollama via winget...
     winget install Ollama.Ollama
     if %ERRORLEVEL% neq 0 (
-        echo Installation fehlgeschlagen. Bitte installiere Ollama manuell von https://ollama.com
+        echo Installation failed. Please install Ollama manually from https://ollama.com
         pause
         exit /b 1
     )
-    :: Pfad aktualisieren damit ollama sofort bekannt ist
+    :: Update path so ollama is recognized immediately
     set "PATH=%PATH%;%USERPROFILE%\AppData\Local\Programs\Ollama"
 )
 
 :: Überprüfen ob Ollama läuft
 curl -s http://localhost:11434 >nul 2>nul
 if %ERRORLEVEL% neq 0 (
-    echo Starte Ollama Server...
+    echo Starting Ollama Server...
     start /b "" ollama serve
-    echo Warte auf Ollama-Server...
+    echo Waiting for Ollama server...
     set count=0
     :wait_ollama
     timeout /t 2 /nobreak >nul
@@ -51,7 +51,7 @@ if %ERRORLEVEL% neq 0 (
     curl -s http://localhost:11434 >nul 2>nul
     if %ERRORLEVEL% neq 0 (
         if %count% geq 20 (
-            echo Ollama-Server konnte nicht gestartet werden.
+            echo Ollama server could not be started.
             pause
             exit /b 1
         )
@@ -60,44 +60,44 @@ if %ERRORLEVEL% neq 0 (
 )
 
 if not exist .venv (
-    echo Erstelle virtuelles Environment...
+    echo Creating virtual environment...
     python -m venv .venv
 )
 
-echo Aktiviere Environment und installiere Requirements...
+echo Activating environment and installing requirements...
 call .venv\Scripts\activate.bat
 pip install -r requirements.txt
 
-echo Starte LLMark im Auto-Pilot Modus...
+echo Starting LLMark in Auto-Pilot mode...
 python app.py --autopilot --token "%GITHUB_TOKEN%"
 
-if /i "%UNINSTALL_AFTER%"=="j" (
+if /i "%UNINSTALL_AFTER%"=="y" (
     echo.
     echo ========================================================
-    echo        Bereinigung (Cleanup) wird ausgefuehrt...
+    echo        Cleanup is being performed...
     echo ========================================================
     
-    echo Beende Ollama Prozesse...
+    echo Terminating Ollama processes...
     taskkill /F /IM ollama.exe >nul 2>nul
     
-    echo Deinstalliere Ollama via winget...
+    echo Uninstalling Ollama via winget...
     winget uninstall Ollama.Ollama
     
-    echo Loesche Ollama Daten (Modelle) in %USERPROFILE%\.ollama ...
+    echo Deleting Ollama data (models) in %USERPROFILE%\.ollama ...
     if exist "%USERPROFILE%\.ollama" (
         rd /s /q "%USERPROFILE%\.ollama"
     )
     
-    echo Loesche lokales virtuelles Environment (.venv)...
+    echo Deleting local virtual environment (.venv)...
     if exist ".venv" (
-        :: Wir muessen das venv verlassen, um es zu loeschen (da wir in der shell sind)
-        :: Aber da python beendet ist, ist der Lock meist weg.
+        :: We must leave the venv to delete it (since we are in the shell)
+        :: But since python has terminated, the lock is usually gone.
         rd /s /q ".venv"
     )
     
-    echo Bereinigung abgeschlossen.
+    echo Cleanup completed.
 )
 
 echo.
-echo Auto-Pilot Durchlauf beendet.
+echo Auto-Pilot run finished.
 pause
