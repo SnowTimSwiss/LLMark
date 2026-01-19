@@ -319,11 +319,10 @@ class ContinuousTestWorker(QThread):
                 self.error_occurred.emit(f"Could not pull judge model {JUDGE_MODEL}")
                 return
 
-        # 2. Infinite Loop through models
-        while self.running:
-            for model in self.models:
-                if not self.running:
-                    break
+        # 2. Run through models once
+        for model in self.models:
+            if not self.running:
+                break
 
             self.status_update.emit(f"Current Model: {model}")
             self.log_update.emit(f"\n--- Starting automated test for {model} ---")

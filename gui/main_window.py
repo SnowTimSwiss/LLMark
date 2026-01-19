@@ -283,19 +283,35 @@ class MainWindow(QMainWindow):
         model_group = QGroupBox("Models to Test")
         m_layout = QVBoxLayout()
         self.autopilot_models_text = QTextEdit()
-        # Default list
+        # Default list - Expanded & Diverse
         default_models = [
             "llama3.2:1b",
             "llama3.2:3b",
             "llama3.1:8b",
+            "qwen2.5:0.5b",
             "qwen2.5:1.5b",
             "qwen2.5:3b",
             "qwen2.5:7b",
-            "phi3.5:latest",
-            "phi3:latest",
+            "qwen2.5:14b",
+            "qwen2.5:32b",
+            "phi4-mini:latest",
             "gemma2:2b",
             "gemma2:9b",
-            "mistral:latest"
+            "gemma2:27b",
+            "gemma3:1b",
+            "gemma3:4b",
+            "gemma3:12b",
+            "qwen3-vl:2b",
+            "qwen3-vl:4b",
+            "qwen3-vl:8b",
+            "mistral:latest",
+            "mistral-nemo:latest",
+            "mixtral:8x7b",
+            "deepseek-v2.5:latest",
+            "deepseek-r1:1.5b",
+            "deepseek-r1:7b",
+            "deepseek-r1:8b",
+            "deepseek-r1:14b",
         ]
         self.autopilot_models_text.setPlainText("\n".join(default_models))
         self.autopilot_models_text.setStyleSheet("background-color: #1e1e1e; color: #ce9178; font-family: 'Consolas';")
