@@ -158,14 +158,12 @@ class BenchmarkRunner:
         if worst and worst.get("score", 0) < 9:
             issues = worst.get("issues", [])
             if issues:
-                # Take first issue, truncate if too long
+                # Take first issue
                 issue_text = issues[0]
-                if len(issue_text) > 40: issue_text = issue_text[:37] + "..."
                 summary.append(f"Issue ({worst['id']}): {issue_text}")
             elif worst.get("comment"):
                  # Fallback to judge comment if no issues list
                  comm = worst.get("comment")
-                 if len(comm) > 40: comm = comm[:37] + "..."
                  summary.append(f"Note ({worst['id']}): {comm}")
         
         # 3. Strength (if distinct)
@@ -328,7 +326,7 @@ class BenchmarkRunner:
             "{\n"
             "  \"score\": number (1-10, where 10 is perfect),\n"
             "  \"issues\": [...],\n"
-            "  \"comment\": \"short summary with score explanation\"\n"
+            "  \"comment\": \"detailed summary with score explanation\"\n"
             "}\n\n"
             "Score guide:\n"
             "10: Perfect, meets all criteria\n"
