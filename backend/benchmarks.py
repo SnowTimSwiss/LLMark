@@ -229,8 +229,7 @@ class BenchmarkRunner:
             "description": "Velocity/Speed",
             "score": round(tps, 2), # TPS is the "score" now
             "comment": f"{round(tps,2)} tokens/sec",
-            "details": {"tokens": int(eval_count), "total_time_s": round(elapsed, 3), "tokens_per_sec": round(tps, 2)},
-            "raw_response_preview": (res.get("response") or "")[:200]
+            "details": {"tokens": int(eval_count), "total_time_s": round(elapsed, 3), "tokens_per_sec": round(tps, 2)}
         }
 
     # -------------------- CONTENT BENCHMARKS --------------------
@@ -309,8 +308,7 @@ class BenchmarkRunner:
             "score": min(10, max(0, score)),
             "comment": judge_result.get("comment", f"Score: {score}/10"),
             "issues": judge_result.get("issues", []),
-            "response_preview": text[:300] if text else "",
-            "judge_raw": judge_result,
+            "judge_feedback": judge_result,
             "category": category_id
         }
 
@@ -391,11 +389,15 @@ Evaluation Criteria:
             score = float(parsed.get("score", 1))
             parsed["score"] = min(10, max(1, round(score)))
             
+            # Raw-Feedback vom Judge mitspeichern
+            parsed["full_judge_response"] = raw
+            
         except Exception as e:
             return {
                 "score": 1,
                 "issues": [f"Judge JSON parse error: {e}", raw[:200]],
-                "comment": "JSON parse error, minimal score assigned"
+                "comment": "JSON parse error, minimal score assigned",
+                "full_judge_response": raw
             }
 
         return parsed
